@@ -99,8 +99,6 @@ background_create(struct desktop *desktop)
 	gdk_wayland_window_set_use_custom_surface(gdk_window);
 
 	desktop->surface = gdk_wayland_window_get_wl_surface(gdk_window);
-	wl_surface_set_user_data(desktop->surface, desktop);
-
 	desktop_shell_set_background(desktop->shell, desktop->output,
 		desktop->surface);
 

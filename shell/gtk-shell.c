@@ -6,20 +6,27 @@
 
 #include "desktop-shell-client-protocol.h"
 
+extern char **environ; /* defined by libc */
+
 gchar *filename = "background.jpg";
+gchar *terminal_path = "/home/tiago/git/weston/clients/weston-terminal";
+
+struct element {
+	GtkWidget *window;
+	GdkPixbuf *pixbuf;
+	struct wl_surface *surface;
+};
 
 struct desktop {
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct desktop_shell *shell;
 	struct wl_output *output;
-	struct wl_surface *surface;
 
 	GdkDisplay *gdk_display;
 
-	/* Background */
-	GtkWidget *window;
-	GdkPixbuf *background;
+	struct element *background;
+	struct element *panel;
 };
 
 static void
@@ -29,9 +36,12 @@ desktop_shell_configure(void *data,
 		struct wl_surface *surface,
 		int32_t width, int32_t height)
 {
-	struct desktop *desktop = wl_surface_get_user_data(surface);
+	struct desktop *desktop = data;
 
-	gtk_widget_set_size_request (desktop->window, width, height);
+	gtk_widget_set_size_request (desktop->background->window,
+				     width, height);
+
+	gtk_widget_set_size_request (desktop->panel->window, width, 32);
 }
 
 static void
@@ -52,13 +62,75 @@ static const struct desktop_shell_listener listener = {
 	desktop_shell_grab_cursor
 };
 
+static void
+launch_terminal (GtkWidget *widget, gpointer   data)
+{
+	char *argv[] = {NULL, NULL};
+	pid_t pid;
+
+	pid = fork();
+	if (pid < 0) {
+		fprintf(stderr, "fork failed: %m\n");
+		return;
+	}
+
+	if (pid)
+		return;
+
+	argv[0] = terminal_path;
+	if (execve(terminal_path, argv, environ) < 0) {
+		fprintf(stderr, "execl '%s' failed: %m\n", terminal_path);
+		exit(1);
+	}
+}
+
+static void
+panel_create(struct desktop *desktop)
+{
+	GdkWindow *gdk_window;
+	struct element *panel;
+	GtkWidget *box1, *button;
+
+	panel = malloc(sizeof *panel);
+	memset(panel, 0, sizeof *panel);
+
+	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+	gtk_window_set_title(GTK_WINDOW(panel->window), "gtk shell");
+	gtk_window_set_decorated(GTK_WINDOW(panel->window), FALSE);
+	gtk_widget_realize(panel->window);
+
+	box1 = gtk_box_new (FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (panel->window), box1);
+
+	button = gtk_button_new_with_label ("launch terminal");
+	g_signal_connect (button, "clicked",
+			  G_CALLBACK (launch_terminal), NULL);
+	gtk_box_pack_start (GTK_BOX(box1), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+
+	gtk_widget_show (box1);
+
+	gdk_window = gtk_widget_get_window(panel->window);
+	gdk_wayland_window_set_use_custom_surface(gdk_window);
+
+	panel->surface = gdk_wayland_window_get_wl_surface(gdk_window);
+	desktop_shell_set_user_data(desktop->shell, desktop);
+	desktop_shell_set_panel(desktop->shell, desktop->output,
+				panel->surface);
+
+	gtk_widget_show_all(panel->window);
+
+	desktop->panel = panel;
+}
+
 /* Expose callback for the drawing area */
 static gboolean
 draw_cb (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
 	struct desktop *desktop = data;
 
-	gdk_cairo_set_source_pixbuf (cr, desktop->background, 0, 0);
+	gdk_cairo_set_source_pixbuf (cr, desktop->background->pixbuf, 0, 0);
 	cairo_paint (cr);
 
 	return TRUE;
@@ -75,34 +147,41 @@ static void
 background_create(struct desktop *desktop)
 {
 	GdkWindow *gdk_window;
+	struct element *background;
+
+	background = malloc(sizeof *background);
+	memset(background, 0, sizeof *background);
 
 	/* TODO: get the "right" directory */
-	desktop->background = gdk_pixbuf_new_from_file (filename, NULL);
-	if (!desktop->background) {
+	background->pixbuf = gdk_pixbuf_new_from_file (filename, NULL);
+	if (!background->pixbuf) {
 		g_message ("Could not load background.");
 		exit (EXIT_FAILURE);
 	}
 
-	desktop->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	background->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-	g_signal_connect (desktop->window, "destroy",
+	g_signal_connect (background->window, "destroy",
 			  G_CALLBACK (destroy_cb), NULL);
 
-	g_signal_connect (desktop->window, "draw",
+	g_signal_connect (background->window, "draw",
 			  G_CALLBACK (draw_cb), desktop);
 
-	gtk_window_set_title(GTK_WINDOW(desktop->window), "gtk shell");
-	gtk_window_set_decorated(GTK_WINDOW(desktop->window), FALSE);
-	gtk_widget_realize(desktop->window);
+	gtk_window_set_title(GTK_WINDOW(background->window), "gtk shell");
+	gtk_window_set_decorated(GTK_WINDOW(background->window), FALSE);
+	gtk_widget_realize(background->window);
 
-	gdk_window = gtk_widget_get_window(desktop->window);
+	gdk_window = gtk_widget_get_window(background->window);
 	gdk_wayland_window_set_use_custom_surface(gdk_window);
 
-	desktop->surface = gdk_wayland_window_get_wl_surface(gdk_window);
+	background->surface = gdk_wayland_window_get_wl_surface(gdk_window);
+	desktop_shell_set_user_data(desktop->shell, desktop);
 	desktop_shell_set_background(desktop->shell, desktop->output,
-		desktop->surface);
+		background->surface);
 
-	gtk_widget_show_all(desktop->window);
+	desktop->background = background;
+
+	gtk_widget_show_all(background->window);
 }
 
 static void
@@ -162,8 +241,10 @@ main(int argc, char *argv[])
 	while (!desktop->output || !desktop->shell)
 		wl_display_roundtrip (desktop->display);
 
+	panel_create(desktop);
 	background_create(desktop);
 	gtk_main();
 
-        return EXIT_SUCCESS;
+	/* TODO cleanup */
+	return EXIT_SUCCESS;
 }

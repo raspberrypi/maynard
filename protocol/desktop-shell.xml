@@ -1,6 +1,6 @@
 <protocol name="desktop">
 
-  <interface name="desktop_shell" version="1">
+  <interface name="desktop_shell" version="2">
     <description summary="create desktop widgets and helpers">
       Traditional user interfaces can rely on this interface to define the
       foundations of typical desktops. Currently it's possible to set up
@@ -31,6 +31,17 @@
 	the grab_cursor event sent just before the enter event.
       </description>
       <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+    <request name="desktop_ready" since="2">
+      <description summary="desktop is ready to be shown">
+	Tell the server, that enough desktop elements have been drawn
+	to make the desktop look ready for use. During start-up, the
+	server can wait for this request with a black screen before
+	starting to fade in the desktop, for instance. If the client
+	parts of a desktop take a long time to initialize, we avoid
+	showing temporary garbage.
+      </description>
     </request>
 
     <!-- We'll fold most of wl_shell into this interface and then
@@ -98,22 +109,4 @@
     </request>
 
   </interface>
-
-  <interface name="input_panel" version="1">
-    <description summary="interface for implementing keyboards">
-      Only one client can bind this interface at a time.
-    </description>
-
-    <request name="set_surface">
-      <description summary="set the surface type as a keyboard">
-	A keybaord surface is only shown, when a text model is active
-      </description>
-
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="output" type="object" interface="wl_output"/>
-    </request>
-
-  </interface>
-
-
 </protocol>

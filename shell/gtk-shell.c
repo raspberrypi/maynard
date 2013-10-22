@@ -8,8 +8,8 @@
 
 extern char **environ; /* defined by libc */
 
-gchar *filename = "background.jpg";
-gchar *terminal_path = "/home/tiago/git/weston/clients/weston-terminal";
+gchar *filename = "/usr/share/themes/Adwaita/backgrounds/morning.jpg";
+gchar *terminal_path = "/opt/wayland/bin/weston-terminal";
 
 struct element {
 	GtkWidget *window;

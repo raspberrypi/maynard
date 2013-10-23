@@ -9,7 +9,6 @@
 extern char **environ; /* defined by libc */
 
 gchar *filename = "/usr/share/themes/Adwaita/backgrounds/morning.jpg";
-gchar *terminal_path = "/opt/wayland/bin/weston-terminal";
 
 struct element {
 	GtkWidget *window;
@@ -27,6 +26,7 @@ struct desktop {
 
 	struct element *background;
 	struct element *panel;
+	struct element *launcher_grid;
 };
 
 static void
@@ -39,6 +39,9 @@ desktop_shell_configure(void *data,
 	struct desktop *desktop = data;
 
 	gtk_widget_set_size_request (desktop->background->window,
+				     width, height);
+
+	gtk_widget_set_size_request (desktop->launcher_grid->window,
 				     width, height);
 
 	gtk_widget_set_size_request (desktop->panel->window, width, 32);
@@ -63,25 +66,42 @@ static const struct desktop_shell_listener listener = {
 };
 
 static void
-launch_terminal (GtkWidget *widget, gpointer   data)
+launcher_grid_create (struct desktop *desktop)
 {
-	char *argv[] = {NULL, NULL};
-	pid_t pid;
+	GdkWindow *gdk_window;
+	struct element *launcher_grid;
+	GtkWidget *grid;
+	GtkWidget *launcher;
 
-	pid = fork();
-	if (pid < 0) {
-		fprintf(stderr, "fork failed: %m\n");
-		return;
-	}
+	launcher_grid = malloc (sizeof *launcher_grid);
+	memset (launcher_grid, 0, sizeof *launcher_grid);
 
-	if (pid)
-		return;
+	launcher_grid->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-	argv[0] = terminal_path;
-	if (execve(terminal_path, argv, environ) < 0) {
-		fprintf(stderr, "execl '%s' failed: %m\n", terminal_path);
-		exit(1);
-	}
+	gtk_window_set_title(GTK_WINDOW(launcher_grid->window), "gtk shell");
+	gtk_window_set_decorated(GTK_WINDOW(launcher_grid->window), FALSE);
+	gtk_widget_realize(launcher_grid->window);
+
+	grid = gtk_grid_new ();
+
+	launcher = gtk_image_new_from_icon_name ("gnome-terminal", GTK_ICON_SIZE_LARGE_TOOLBAR);
+
+	gtk_container_add (GTK_CONTAINER (grid), launcher);
+
+	gtk_container_add (GTK_CONTAINER (launcher_grid->window), grid);
+
+	gtk_widget_show_all (grid);
+
+	desktop->launcher_grid = launcher_grid;
+}
+
+static void
+launcher_grid_toggle (GtkWidget *widget, struct desktop *desktop)
+{
+	gboolean grid_visible;
+
+	grid_visible = gtk_widget_is_visible (desktop->launcher_grid->window);
+	gtk_widget_set_visible (desktop->launcher_grid->window, !grid_visible);
 }
 
 static void
@@ -100,13 +120,13 @@ panel_create(struct desktop *desktop)
 	gtk_window_set_decorated(GTK_WINDOW(panel->window), FALSE);
 	gtk_widget_realize(panel->window);
 
-	box1 = gtk_box_new (FALSE, 0);
+	box1 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_container_add (GTK_CONTAINER (panel->window), box1);
 
-	button = gtk_button_new_with_label ("launch terminal");
+	button = gtk_button_new_with_label ("Menu");
 	g_signal_connect (button, "clicked",
-			  G_CALLBACK (launch_terminal), NULL);
-	gtk_box_pack_start (GTK_BOX(box1), button, TRUE, TRUE, 0);
+			  G_CALLBACK (launcher_grid_toggle), desktop);
+	gtk_box_pack_start (GTK_BOX(box1), button, FALSE, FALSE, 0);
 	gtk_widget_show (button);
 
 	gtk_widget_show (box1);
@@ -242,7 +262,9 @@ main(int argc, char *argv[])
 		wl_display_roundtrip (desktop->display);
 
 	panel_create(desktop);
+	launcher_grid_create (desktop);
 	background_create(desktop);
+
 	gtk_main();
 
 	/* TODO cleanup */

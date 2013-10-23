@@ -5,6 +5,7 @@
 #include <gdk/gdkwayland.h>
 
 #include "desktop-shell-client-protocol.h"
+#include "launcher-grid.h"
 
 extern char **environ; /* defined by libc */
 
@@ -68,10 +69,8 @@ static const struct desktop_shell_listener listener = {
 static void
 launcher_grid_create (struct desktop *desktop)
 {
-	GdkWindow *gdk_window;
 	struct element *launcher_grid;
 	GtkWidget *grid;
-	GtkWidget *launcher;
 
 	launcher_grid = malloc (sizeof *launcher_grid);
 	memset (launcher_grid, 0, sizeof *launcher_grid);
@@ -82,11 +81,7 @@ launcher_grid_create (struct desktop *desktop)
 	gtk_window_set_decorated(GTK_WINDOW(launcher_grid->window), FALSE);
 	gtk_widget_realize(launcher_grid->window);
 
-	grid = gtk_grid_new ();
-
-	launcher = gtk_image_new_from_icon_name ("gnome-terminal", GTK_ICON_SIZE_LARGE_TOOLBAR);
-
-	gtk_container_add (GTK_CONTAINER (grid), launcher);
+	grid = launcher_grid_new ();
 
 	gtk_container_add (GTK_CONTAINER (launcher_grid->window), grid);
 

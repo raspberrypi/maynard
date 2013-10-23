@@ -44,7 +44,7 @@ desktop_shell_configure(void *data,
 	gtk_widget_set_size_request (desktop->launcher_grid->window,
 				     width, height);
 
-	gtk_widget_set_size_request (desktop->panel->window, width, 32);
+	gtk_window_resize (GTK_WINDOW (desktop->panel->window), width, 16);
 }
 
 static void

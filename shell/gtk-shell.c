@@ -42,8 +42,15 @@ desktop_shell_configure(void *data,
 	gtk_widget_set_size_request (desktop->background->window,
 				     width, height);
 
+	/* Not sure where this '28' comes from, but it seems to work...
+	 * The issue here is that the bottom of the grid (after scrolling
+	 * all the way down) gets cut. That is because the window is a
+	 * bit bigger than it should, but logic tells me we should only
+	 * substract 16px from the height (those we're giving to the panel),
+	 * but maybe I'm missing something...
+	 */
 	gtk_widget_set_size_request (desktop->launcher_grid->window,
-				     width, height);
+				     width, height - 28);
 
 	gtk_window_resize (GTK_WINDOW (desktop->panel->window), width, 16);
 }

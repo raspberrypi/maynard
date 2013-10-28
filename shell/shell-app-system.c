@@ -52,7 +52,7 @@ shell_app_system_init (ShellAppSystem *self)
                                                    ShellAppSystemPrivate);
 
   priv->id_to_info = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                           NULL,
+                                           (GDestroyNotify)g_free,
                                            (GDestroyNotify)g_object_unref);
 
   priv->apps_tree = gmenu_tree_new ("applications.menu", GMENU_TREE_FLAGS_NONE);
@@ -142,8 +142,6 @@ on_apps_tree_changed_cb (GMenuTree *tree,
   GHashTable *new_apps;
   GHashTableIter iter;
   gpointer key, value;
-  GSList *removed_apps = NULL;
-  GSList *removed_node;
 
   g_assert (tree == self->priv->apps_tree);
 
@@ -163,9 +161,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
   /* FIXME: Is this 'replace info, then removed those that are gone from
    * the menu tree' vs. 'empty hash table, add everything that's still here'
-   * still valid (and useful) after the code changes done here (as compared
-   * to the original gnome-shell shell-app-system.c code? What about the
-   * references in the GHashTable? Do we need to strdup the keys?
+   * still useful (from a performance POV) ?
    */
 
   new_apps = get_flattened_entries_from_tree (self->priv->apps_tree);
@@ -180,26 +176,17 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       if (!info)
         info = gmenu_tree_entry_get_app_info (entry);
 
-      g_hash_table_replace (self->priv->id_to_info, (char*)id, info);
+      g_hash_table_insert (self->priv->id_to_info, g_strdup (id), g_object_ref (info));
     }
-  /* Now iterate over the apps again; we need to unreference any apps
-   * which have been removed.  The JS code may still be holding a
-   * reference; that's fine.
-   */
+
   g_hash_table_iter_init (&iter, self->priv->id_to_info);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       const char *id = key;
 
       if (!g_hash_table_lookup (new_apps, id))
-        removed_apps = g_slist_prepend (removed_apps, (char*)id);
+        g_hash_table_iter_remove (&iter);
     }
-  for (removed_node = removed_apps; removed_node; removed_node = removed_node->next)
-    {
-      const char *id = removed_node->data;
-      g_hash_table_remove (self->priv->id_to_info, id);
-    }
-  g_slist_free (removed_apps);
 
   g_hash_table_destroy (new_apps);
 

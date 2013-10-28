@@ -26,19 +26,26 @@ child_activated_cb (GtkWidget *grid,
 }
 
 static void
+destroy_widget (GtkWidget *widget,
+    gpointer data)
+{
+  gtk_widget_destroy (widget);
+}
+
+static void
 installed_changed_cb (ShellAppSystem *app_system, GtkWidget *grid)
 {
   GHashTable *entries = shell_app_system_get_entries (app_system);
   GHashTableIter iter;
   gpointer key, value;
 
-  /* FIXME: if the tree changes while we're running, we'll readd entries
-   * that haven't been removed from the tree, so we'll get lots of dups */
+  /* Remove all children first */
+  gtk_container_foreach (GTK_CONTAINER (grid), destroy_widget, NULL);
 
   g_hash_table_iter_init (&iter, entries);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
-      GDesktopAppInfo *info = value;
+      GDesktopAppInfo *info = G_DESKTOP_APP_INFO (value);
       GtkWidget *app = app_launcher_new_from_desktop_info (info);
 
       gtk_container_add (GTK_CONTAINER (grid), app);

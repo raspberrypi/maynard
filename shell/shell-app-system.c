@@ -172,9 +172,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       GMenuTreeEntry *entry = value;
       GDesktopAppInfo *info;
 
-      info = g_hash_table_lookup (self->priv->id_to_info, id);
-      if (!info)
-        info = gmenu_tree_entry_get_app_info (entry);
+      info = gmenu_tree_entry_get_app_info (entry);
 
       g_hash_table_insert (self->priv->id_to_info, g_strdup (id), g_object_ref (info));
     }

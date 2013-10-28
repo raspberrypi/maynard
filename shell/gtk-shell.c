@@ -61,6 +61,7 @@ static void
 desktop_shell_prepare_lock_surface(void *data,
 		struct desktop_shell *desktop_shell)
 {
+	desktop_shell_unlock (desktop_shell);
 }
 
 static void

@@ -1,1 +1,1 @@
-SUBDIRS = shell
+SUBDIRS = protocol shell

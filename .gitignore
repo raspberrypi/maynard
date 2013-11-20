@@ -38,4 +38,4 @@ _gen
 /weston-gtk-shell-*.tar.xz
 shell/desktop-shell-client-protocol.h
 shell/desktop-shell-protocol.c
-shell/weston-desktop-shell
+shell/weston-gtk-shell

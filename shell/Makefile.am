@@ -1,4 +1,4 @@
-libexec_PROGRAMS = weston-desktop-shell
+libexec_PROGRAMS = weston-gtk-shell
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = $(CLIENT_CFLAGS) $(GTK_CFLAGS)
@@ -9,7 +9,7 @@ external_sources =				\
 	egg-flow-box.c				\
 	egg-flow-box.h
 
-weston_desktop_shell_SOURCES =			\
+weston_gtk_shell_SOURCES =			\
 	gtk-shell.c				\
 	app-launcher.c				\
 	app-launcher.h				\
@@ -20,7 +20,7 @@ weston_desktop_shell_SOURCES =			\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	$(external_sources)
-weston_desktop_shell_LDADD = $(GTK_LIBS)
+weston_gtk_shell_LDADD = $(GTK_LIBS)
 
 BUILT_SOURCES =					\
 	desktop-shell-client-protocol.h		\

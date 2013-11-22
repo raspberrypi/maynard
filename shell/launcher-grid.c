@@ -32,26 +32,49 @@ destroy_widget (GtkWidget *widget,
   gtk_widget_destroy (widget);
 }
 
+static gint
+sort_apps (gconstpointer a,
+    gconstpointer b)
+{
+  GAppInfo *info1 = G_APP_INFO (a);
+  GAppInfo *info2 = G_APP_INFO (b);
+  gchar *s1, *s2;
+  gint ret;
+
+  s1 = g_utf8_casefold (g_app_info_get_display_name (info1), -1);
+  s2 = g_utf8_casefold (g_app_info_get_display_name (info2), -1);
+
+  ret = g_strcmp0 (s1, s2);
+
+  g_free (s1);
+  g_free (s2);
+
+  return ret;
+}
+
 static void
 installed_changed_cb (ShellAppSystem *app_system, GtkWidget *grid)
 {
   GHashTable *entries = shell_app_system_get_entries (app_system);
-  GHashTableIter iter;
-  gpointer key, value;
+  GList *l, *values;
 
   /* Remove all children first */
   gtk_container_foreach (GTK_CONTAINER (grid), destroy_widget, NULL);
 
-  g_hash_table_iter_init (&iter, entries);
-  while (g_hash_table_iter_next (&iter, &key, &value))
+  values = g_hash_table_get_values (entries);
+  values = g_list_sort (values, sort_apps);
+
+  for (l = values; l; l = l->next)
     {
-      GDesktopAppInfo *info = G_DESKTOP_APP_INFO (value);
+      GDesktopAppInfo *info = G_DESKTOP_APP_INFO (l->data);
       GtkWidget *app = app_launcher_new_from_desktop_info (info);
 
       gtk_container_add (GTK_CONTAINER (grid), app);
     }
 
-gtk_widget_show_all (grid);
+  g_list_free (values);
+
+  gtk_widget_show_all (grid);
 }
 
 GtkWidget *

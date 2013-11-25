@@ -89,6 +89,8 @@ app_launcher_constructed (GObject *object)
   GtkWidget *image;
   GIcon *icon;
 
+  G_OBJECT_CLASS (app_launcher_parent_class)->constructed (object);
+
   icon = g_app_info_get_icon (G_APP_INFO (self->priv->info));
   image = gtk_image_new_from_gicon (icon, GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_box_pack_start (GTK_BOX (self), image, FALSE, FALSE, 6);

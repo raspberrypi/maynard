@@ -19,6 +19,7 @@ PKG_CHECK_MODULES([GTK], [
 	gtk+-3.0 >= 3.7
 	gtk+-wayland-3.0
 	libgnome-menu-3.0
+	gnome-desktop-3.0
 ])
 
 WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])

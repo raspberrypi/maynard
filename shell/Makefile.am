@@ -13,6 +13,8 @@ weston_gtk_shell_SOURCES =			\
 	gtk-shell.c				\
 	app-launcher.c				\
 	app-launcher.h				\
+	clock.c					\
+	clock.h					\
 	launcher-grid.c				\
 	launcher-grid.h				\
 	shell-app-system.c			\

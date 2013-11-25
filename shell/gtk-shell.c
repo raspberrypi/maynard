@@ -6,6 +6,7 @@
 
 #include "desktop-shell-client-protocol.h"
 #include "launcher-grid.h"
+#include "clock.h"
 
 extern char **environ; /* defined by libc */
 
@@ -131,7 +132,9 @@ panel_create(struct desktop *desktop)
 	gtk_box_pack_start (GTK_BOX(box1), button, FALSE, FALSE, 0);
 	gtk_widget_show (button);
 
-	gtk_widget_show (box1);
+	gtk_box_pack_end (GTK_BOX(box1), weston_gtk_clock_new (), FALSE, FALSE, 6);
+
+	gtk_widget_show_all (box1);
 
 	gdk_window = gtk_widget_get_window(panel->window);
 	gdk_wayland_window_set_use_custom_surface(gdk_window);

@@ -11,6 +11,13 @@ AM_SILENT_RULES([yes])
 # Check for programs
 AC_PROG_CC
 
+IT_PROG_INTLTOOL([0.40])
+
+GETTEXT_PACKAGE=weston-gtk-shell
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
+                   [The prefix for our gettext translation domains.])
+
 PKG_PROG_PKG_CONFIG()
 
 PKG_CHECK_MODULES([GTK], [
@@ -22,10 +29,14 @@ PKG_CHECK_MODULES([GTK], [
 	gnome-desktop-3.0
 ])
 
+GLIB_GSETTINGS
+
 WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
 
 AC_CONFIG_FILES([Makefile
+		 data/Makefile
 		 shell/Makefile
+		 po/Makefile.in
 		 protocol/Makefile
 		 ])
 AC_OUTPUT

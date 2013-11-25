@@ -5,8 +5,9 @@
 #include <gdk/gdkwayland.h>
 
 #include "desktop-shell-client-protocol.h"
-#include "launcher-grid.h"
 #include "clock.h"
+#include "favorites.h"
+#include "launcher-grid.h"
 
 extern char **environ; /* defined by libc */
 
@@ -112,7 +113,7 @@ panel_create(struct desktop *desktop)
 {
 	GdkWindow *gdk_window;
 	struct element *panel;
-	GtkWidget *box1, *button;
+	GtkWidget *box1, *box2, *button;
 
 	panel = malloc(sizeof *panel);
 	memset(panel, 0, sizeof *panel);
@@ -126,13 +127,22 @@ panel_create(struct desktop *desktop)
 	box1 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_container_add (GTK_CONTAINER (panel->window), box1);
 
+	/* We have a box on the left and a box on the right set to expand
+	 * so that they both have the same size and thus the favorites end
+	 * exactly in the middle of the panel.
+	 */
+	box2 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	button = gtk_button_new_with_label ("Menu");
 	g_signal_connect (button, "clicked",
 			  G_CALLBACK (launcher_grid_toggle), desktop);
-	gtk_box_pack_start (GTK_BOX(box1), button, FALSE, FALSE, 0);
-	gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box2), button, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (box1), box2, TRUE, TRUE, 0);
 
-	gtk_box_pack_end (GTK_BOX(box1), weston_gtk_clock_new (), FALSE, FALSE, 6);
+	gtk_box_pack_start (GTK_BOX (box1), weston_gtk_favorites_new (), FALSE, FALSE, 0);
+
+	box2 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_box_pack_end (GTK_BOX (box2), weston_gtk_clock_new (), FALSE, FALSE, 6);
+	gtk_box_pack_end (GTK_BOX (box1), box2, TRUE, TRUE, 0);
 
 	gtk_widget_show_all (box1);
 

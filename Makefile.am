@@ -1,1 +1,1 @@
-SUBDIRS = protocol shell
+SUBDIRS = data protocol shell po

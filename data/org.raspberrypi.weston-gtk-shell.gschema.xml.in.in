@@ -1,0 +1,14 @@
+<schemalist>
+  <schema id="org.raspberrypi.weston-gtk-shell"
+          path="/org/raspberrypi/weston-gtk-shell/"
+          gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="favorites" type="as">
+      <default>[ 'epiphany.desktop', 'libreoffice-writer.desktop', 'nautilus.desktop' ]</default>
+      <_summary>List of desktop file IDs for favorite applications</_summary>
+      <_description>
+        The applications corresponding to these identifiers
+        will be displayed in the panel.
+      </_description>
+    </key>
+  </schema>
+</schemalist>

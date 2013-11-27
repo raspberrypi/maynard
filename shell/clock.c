@@ -48,7 +48,7 @@ weston_gtk_clock_init (WestonGtkClock *self)
                                             WESTON_GTK_CLOCK_TYPE,
                                             WestonGtkClockPrivate);
 
-  self->priv->wall_clock = gnome_wall_clock_new ();
+  self->priv->wall_clock = g_object_new (GNOME_TYPE_WALL_CLOCK, NULL);
   g_signal_connect (self->priv->wall_clock, "notify::clock",
                     G_CALLBACK (update_clock), self);
   update_clock (self->priv->wall_clock, NULL, self);

@@ -1,6 +1,6 @@
 AC_PREREQ([2.64])
 AC_INIT([weston-gtk-shell],
-        [0.2.0])
+        [0.2.0+git])
 
 AC_CONFIG_HEADERS([config.h])
 

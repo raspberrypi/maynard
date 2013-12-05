@@ -254,6 +254,8 @@ main(int argc, char *argv[])
 {
 	struct desktop *desktop;
 
+	gdk_set_allowed_backends ("wayland");
+
 	gtk_init(&argc, &argv);
 
 	desktop = malloc(sizeof *desktop);

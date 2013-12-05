@@ -23,7 +23,7 @@ PKG_PROG_PKG_CONFIG()
 PKG_CHECK_MODULES([GTK], [
 	wayland-client >= 1.0.2
 	weston >= 1.3.0
-	gtk+-3.0 >= 3.7
+	gtk+-3.0 >= 3.10
 	gtk+-wayland-3.0
 	libgnome-menu-3.0
 	gnome-desktop-3.0

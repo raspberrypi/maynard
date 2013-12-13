@@ -8,6 +8,7 @@
 #include "clock.h"
 #include "favorites.h"
 #include "launcher-grid.h"
+#include "sound-applet.h"
 
 extern char **environ; /* defined by libc */
 
@@ -115,6 +116,7 @@ panel_create(struct desktop *desktop)
 	GdkWindow *gdk_window;
 	struct element *panel;
 	GtkWidget *box1, *box2, *button;
+	GtkWidget *sound_applet, *popup;
 
 	panel = malloc(sizeof *panel);
 	memset(panel, 0, sizeof *panel);
@@ -143,6 +145,9 @@ panel_create(struct desktop *desktop)
 
 	box2 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_end (GTK_BOX (box2), weston_gtk_clock_new (), FALSE, FALSE, 6);
+
+	sound_applet = weston_gtk_sound_applet_new ();
+	gtk_box_pack_end (GTK_BOX (box2), sound_applet, FALSE, FALSE, 6);
 	gtk_box_pack_end (GTK_BOX (box1), box2, TRUE, TRUE, 0);
 
 	gtk_widget_show_all (box1);

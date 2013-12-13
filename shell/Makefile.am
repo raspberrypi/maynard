@@ -21,6 +21,8 @@ weston_gtk_shell_SOURCES =			\
 	launcher-grid.h				\
 	shell-app-system.c			\
 	shell-app-system.h			\
+	sound-applet.c				\
+	sound-applet.h				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	$(external_sources)

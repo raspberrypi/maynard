@@ -59,6 +59,8 @@ desktop_shell_configure(void *data,
 				     width, height - 28);
 
 	gtk_window_resize (GTK_WINDOW (desktop->panel->window), width, 16);
+
+	desktop_shell_desktop_ready(desktop->shell);
 }
 
 static void
@@ -260,7 +262,7 @@ registry_handle_global(void *data, struct wl_registry *registry,
 
 	if (!strcmp(interface, "desktop_shell")) {
 		d->shell = wl_registry_bind(registry, name,
-				&desktop_shell_interface, 1);
+				&desktop_shell_interface, 3);
 		desktop_shell_add_listener(d->shell, &listener, d);
 	} else if (!strcmp(interface, "wl_output")) {
 

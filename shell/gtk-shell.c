@@ -5,6 +5,9 @@
 #include <gdk/gdkwayland.h>
 
 #include "desktop-shell-client-protocol.h"
+
+#include "weston-gtk-shell-resources.h"
+
 #include "clock.h"
 #include "favorites.h"
 #include "launcher-grid.h"
@@ -226,6 +229,30 @@ background_create(struct desktop *desktop)
 }
 
 static void
+css_setup(struct desktop *desktop)
+{
+	GtkCssProvider *provider;
+	GFile *file;
+	GError *error = NULL;
+
+	provider = gtk_css_provider_new ();
+
+	file = g_file_new_for_uri ("resource:///org/raspberry-pi/weston-gtk-shell/style.css");
+
+	if (!gtk_css_provider_load_from_file (provider, file, &error)) {
+		g_warning ("Failed to load CSS file: %s", error->message);
+		g_clear_error (&error);
+		g_object_unref (file);
+		return;
+	}
+
+	gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
+						   GTK_STYLE_PROVIDER (provider), 600);
+
+	g_object_unref (file);
+}
+
+static void
 registry_handle_global(void *data, struct wl_registry *registry,
 		uint32_t name, const char *interface, uint32_t version)
 {
@@ -263,6 +290,8 @@ main(int argc, char *argv[])
 
 	gtk_init(&argc, &argv);
 
+	g_resources_register (weston_gtk_shell_get_resource ());
+
 	desktop = malloc(sizeof *desktop);
 	desktop->output = NULL;
 	desktop->shell = NULL;
@@ -284,6 +313,7 @@ main(int argc, char *argv[])
 	while (!desktop->output || !desktop->shell)
 		wl_display_roundtrip (desktop->display);
 
+	css_setup(desktop);
 	panel_create(desktop);
 	launcher_grid_create (desktop);
 	background_create(desktop);

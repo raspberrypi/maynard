@@ -23,6 +23,8 @@ weston_gtk_shell_SOURCES =			\
 	shell-app-system.h			\
 	sound-applet.c				\
 	sound-applet.h				\
+	weston-gtk-shell-resources.c		\
+	weston-gtk-shell-resources.h		\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	$(external_sources)
@@ -30,7 +32,18 @@ weston_gtk_shell_LDADD = $(GTK_LIBS)
 
 BUILT_SOURCES =					\
 	desktop-shell-client-protocol.h		\
-	desktop-shell-protocol.c
+	desktop-shell-protocol.c		\
+	weston-gtk-shell-resources.c		\
+	weston-gtk-shell-resources.h
+
+# gresource for css
+resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/weston-gtk-shell.gresource.xml)
+weston-gtk-shell-resources.c: weston-gtk-shell.gresource.xml $(resource_files)
+	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-source --c-name weston_gtk_shell $<
+weston-gtk-shell-resources.h: weston-gtk-shell.gresource.xml $(resource_files)
+	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-header --c-name weston_gtk_shell $<
+
+EXTRA_DIST = style.css
 
 CLEANFILES = $(BUILT_SOURCES)
 

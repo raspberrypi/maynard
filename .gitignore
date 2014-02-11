@@ -38,6 +38,8 @@ _gen
 /weston-gtk-shell-*.tar.xz
 shell/desktop-shell-client-protocol.h
 shell/desktop-shell-protocol.c
+shell/weston-gtk-shell-resources.c
+shell/weston-gtk-shell-resources.h
 shell/weston-gtk-shell
 data/gschemas.compiled
 data/org.raspberrypi.weston-gtk-shell.gschema.valid

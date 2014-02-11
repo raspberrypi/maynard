@@ -1,6 +1,6 @@
 <protocol name="desktop">
 
-  <interface name="desktop_shell" version="2">
+  <interface name="desktop_shell" version="3">
     <description summary="create desktop widgets and helpers">
       Traditional user interfaces can rely on this interface to define the
       foundations of typical desktops. Currently it's possible to set up
@@ -91,6 +91,24 @@
 
       <entry name="busy" value="11"/>
     </enum>
+
+    <!-- version 3 additions -->
+
+    <enum name="panel_position">
+      <entry name="top" value="0"/>
+      <entry name="bottom" value="1"/>
+      <entry name="left" value="2"/>
+      <entry name="right" value="3"/>
+    </enum>
+
+    <request name="set_panel_position" since="3">
+      <arg name="position" type="uint"/>
+      <description summary="set panel position">
+        Tell the shell which side of the screen the panel is
+        located. This is so that new windows do not overlap the panel
+        and maximized windows maximize properly.
+      </description>
+    </request>
   </interface>
 
   <interface name="screensaver" version="1">

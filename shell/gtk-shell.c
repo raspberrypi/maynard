@@ -5,6 +5,7 @@
 #include <gdk/gdkwayland.h>
 
 #include "desktop-shell-client-protocol.h"
+#include "shell-helper-client-protocol.h"
 
 #include "weston-gtk-shell-resources.h"
 
@@ -28,6 +29,7 @@ struct desktop {
 	struct wl_registry *registry;
 	struct desktop_shell *shell;
 	struct wl_output *output;
+	struct shell_helper *helper;
 
 	GdkDisplay *gdk_display;
 
@@ -269,6 +271,9 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		/* TODO: create multiple outputs */
 		d->output = wl_registry_bind(registry, name,
 					     &wl_output_interface, 1);
+	} else if (!strcmp(interface, "shell_helper")) {
+		d->helper = wl_registry_bind(registry, name,
+					     &shell_helper_interface, 1);
 	}
 }
 
@@ -297,6 +302,7 @@ main(int argc, char *argv[])
 	desktop = malloc(sizeof *desktop);
 	desktop->output = NULL;
 	desktop->shell = NULL;
+	desktop->helper = NULL;
 
 	desktop->gdk_display = gdk_display_get_default();
 	desktop->display =
@@ -310,9 +316,9 @@ main(int argc, char *argv[])
 	wl_registry_add_listener(desktop->registry,
 			&registry_listener, desktop);
 
-	/* Wait until we have been notified about the compositor and shell
-	 * objects */
-	while (!desktop->output || !desktop->shell)
+	/* Wait until we have been notified about the compositor,
+	 * shell, and shell helper objects */
+	while (!desktop->output || !desktop->shell || !desktop->helper)
 		wl_display_roundtrip (desktop->display);
 
 	css_setup(desktop);

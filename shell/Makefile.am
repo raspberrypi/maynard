@@ -27,12 +27,16 @@ weston_gtk_shell_SOURCES =			\
 	weston-gtk-shell-resources.h		\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
+	shell-helper-client-protocol.h		\
+	shell-helper-protocol.c			\
 	$(external_sources)
 weston_gtk_shell_LDADD = $(GTK_LIBS)
 
 BUILT_SOURCES =					\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
+	shell-helper-client-protocol.h		\
+	shell-helper-protocol.c			\
 	weston-gtk-shell-resources.c		\
 	weston-gtk-shell-resources.h
 
@@ -45,6 +49,24 @@ weston-gtk-shell-resources.h: weston-gtk-shell.gresource.xml $(resource_files)
 
 EXTRA_DIST = style.css
 
+# shell-helper weston module
+moduledir = $(libdir)/weston
+module_LTLIBRARIES = shell-helper.la
+
+# otherwise shell-helper-protocol.c is generated twice- once with
+# libtool and once without
+mod-%-protocol.c : $(wayland_protocoldir)/%.xml
+	$(AM_V_GEN)$(wayland_scanner) code < $< > $@
+
+shell_helper_la_LDFLAGS = -module -avoid-version
+shell_helper_la_LIBADD = $(GTK_LIBS)
+shell_helper_la_SOURCES =				\
+	shell-helper.c
+nodist_shell_helper_la_SOURCES =			\
+	mod-shell-helper-protocol.c 			\
+	shell-helper-server-protocol.h
+
+BUILT_SOURCES += $(nodist_shell_helper_la_SOURCES)
 CLEANFILES = $(BUILT_SOURCES)
 
 @wayland_scanner_rules@

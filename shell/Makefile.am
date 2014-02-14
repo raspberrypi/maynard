@@ -11,6 +11,8 @@ external_sources =				\
 
 weston_gtk_shell_SOURCES =			\
 	gtk-shell.c				\
+	app-icon.c				\
+	app-icon.h				\
 	app-launcher.c				\
 	app-launcher.h				\
 	clock.c					\

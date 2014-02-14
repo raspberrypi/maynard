@@ -1,0 +1,21 @@
+<protocol name="shell_helper">
+  <interface name="shell_helper" version="1">
+
+    <request name="move_surface">
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+    </request>
+
+    <request name="slide_surface">
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+    </request>
+
+    <request name="slide_surface_back">
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+  </interface>
+</protocol>

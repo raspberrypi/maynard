@@ -37,6 +37,7 @@ struct desktop {
 	struct element *background;
 	struct element *panel;
 	struct element *launcher_grid;
+	struct element *clock;
 
 	guint initial_panel_timeout_id;
 	guint hide_panel_idle_id;
@@ -61,6 +62,11 @@ connect_enter_leave_signals (gpointer data)
 	g_signal_connect (desktop->panel->window, "enter-notify-event",
 			  G_CALLBACK (panel_window_enter_cb), desktop);
 	g_signal_connect (desktop->panel->window, "leave-notify-event",
+			  G_CALLBACK (panel_window_leave_cb), desktop);
+
+	g_signal_connect (desktop->clock->window, "enter-notify-event",
+			  G_CALLBACK (panel_window_enter_cb), desktop);
+	g_signal_connect (desktop->clock->window, "leave-notify-event",
 			  G_CALLBACK (panel_window_leave_cb), desktop);
 
 	return FALSE;
@@ -96,6 +102,12 @@ desktop_shell_configure(void *data,
 	shell_helper_move_surface(desktop->helper,
 				  desktop->panel->surface,
 				  0, (height - window_height) / 2);
+
+	gtk_window_resize (GTK_WINDOW (desktop->clock->window), 56*2.6, 56*2);
+
+	shell_helper_move_surface(desktop->helper,
+				  desktop->clock->surface,
+				  56, (height - window_height) / 2);
 
 	desktop_shell_desktop_ready(desktop->shell);
 
@@ -157,6 +169,38 @@ launcher_grid_toggle (GtkWidget *widget, struct desktop *desktop)
 	gtk_widget_set_visible (desktop->launcher_grid->window, !grid_visible);
 }
 
+static GtkWidget *
+clock_create (struct desktop *desktop)
+{
+	struct element *clock;
+	GtkWidget *widget;
+	GdkWindow *gdk_window;
+
+	clock = malloc(sizeof *clock);
+	memset(clock, 0, sizeof *clock);
+
+	clock->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(clock->window), "gtk shell");
+	gtk_window_set_decorated(GTK_WINDOW(clock->window), FALSE);
+	gtk_widget_realize(clock->window);
+
+	gtk_style_context_add_class (gtk_widget_get_style_context (clock->window),
+				     "wgs-clock");
+
+	widget = gtk_label_new ("");
+	gtk_label_set_markup (GTK_LABEL (widget), "<span font=\"Droid Sans 32\">11:47</span>\n"
+			      "<span font=\"Droid Sans 12\">13/02/2014</span>");
+	gtk_label_set_justify (GTK_LABEL (widget), GTK_JUSTIFY_CENTER);
+	gtk_container_add (GTK_CONTAINER (clock->window), widget);
+
+	gdk_window = gtk_widget_get_window(clock->window);
+	clock->surface = gdk_wayland_window_get_wl_surface(gdk_window);
+
+	gtk_widget_show_all (clock->window);
+
+	desktop->clock = clock;
+}
+
 static gboolean
 panel_window_enter_cb (GtkWidget *widget,
 		       GdkEventCrossing *event,
@@ -175,6 +219,8 @@ panel_window_enter_cb (GtkWidget *widget,
 
 	shell_helper_slide_surface_back(desktop->helper,
 					desktop->panel->surface);
+	shell_helper_slide_surface_back(desktop->helper,
+					desktop->clock->surface);
 
 	return FALSE;
 }
@@ -193,6 +239,9 @@ leave_panel_idle_cb (gpointer data)
 	shell_helper_slide_surface(desktop->helper,
 				   desktop->panel->surface,
 				   -31, 0);
+	shell_helper_slide_surface(desktop->helper,
+				   desktop->clock->surface,
+				   25 - 56 - width, 0);
 
 	return FALSE;
 }
@@ -251,6 +300,7 @@ panel_create(struct desktop *desktop)
 	gtk_container_add (GTK_CONTAINER (panel->window), box1);
 
 	/* TODO: clock */
+	clock_create(desktop);
 
 	/* TODO: wifi */
 	image = gtk_image_new_from_icon_name ("network-wireless-signal-excellent-symbolic",

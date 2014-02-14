@@ -37,11 +37,34 @@ struct desktop {
 	struct element *background;
 	struct element *panel;
 	struct element *launcher_grid;
+
+	guint initial_panel_timeout_id;
+	guint hide_panel_idle_id;
 };
 
 /* TODO: guessed from the mockups, it'd be nice to have this in stone
  * somewhere. */
 #define PANEL_HEIGHT_RATIO 0.73
+
+static gboolean panel_window_enter_cb (GtkWidget *widget,
+				       GdkEventCrossing *event,
+				       struct desktop *desktop);
+static gboolean panel_window_leave_cb (GtkWidget *widget,
+				       GdkEventCrossing *event,
+				       struct desktop *desktop);
+
+static gboolean
+connect_enter_leave_signals (gpointer data)
+{
+	struct desktop *desktop = data;
+
+	g_signal_connect (desktop->panel->window, "enter-notify-event",
+			  G_CALLBACK (panel_window_enter_cb), desktop);
+	g_signal_connect (desktop->panel->window, "leave-notify-event",
+			  G_CALLBACK (panel_window_leave_cb), desktop);
+
+	return FALSE;
+}
 
 static void
 desktop_shell_configure(void *data,
@@ -75,6 +98,11 @@ desktop_shell_configure(void *data,
 				  0, (height - window_height) / 2);
 
 	desktop_shell_desktop_ready(desktop->shell);
+
+	/* TODO: why does the panel signal leave on drawing for
+	 * startup? we don't want to have to have this silly
+	 * timeout. */
+	g_timeout_add_seconds (1, connect_enter_leave_signals, desktop);
 }
 
 static void
@@ -129,6 +157,72 @@ launcher_grid_toggle (GtkWidget *widget, struct desktop *desktop)
 	gtk_widget_set_visible (desktop->launcher_grid->window, !grid_visible);
 }
 
+static gboolean
+panel_window_enter_cb (GtkWidget *widget,
+		       GdkEventCrossing *event,
+		       struct desktop *desktop)
+{
+	if (desktop->initial_panel_timeout_id > 0) {
+		g_source_remove (desktop->initial_panel_timeout_id);
+		desktop->initial_panel_timeout_id = 0;
+	}
+
+	if (desktop->hide_panel_idle_id > 0) {
+		g_source_remove (desktop->hide_panel_idle_id);
+		desktop->hide_panel_idle_id = 0;
+		return;
+	}
+
+	shell_helper_slide_surface_back(desktop->helper,
+					desktop->panel->surface);
+
+	return FALSE;
+}
+
+static gboolean
+leave_panel_idle_cb (gpointer data)
+{
+	struct desktop *desktop = data;
+	gint width;
+
+	desktop->hide_panel_idle_id = 0;
+
+	gtk_window_get_size (GTK_WINDOW (desktop->clock->window),
+			     &width, NULL);
+
+	shell_helper_slide_surface(desktop->helper,
+				   desktop->panel->surface,
+				   -31, 0);
+
+	return FALSE;
+}
+
+static gboolean
+panel_window_leave_cb (GtkWidget *widget,
+		       GdkEventCrossing *event,
+		       struct desktop *desktop)
+{
+	if (desktop->initial_panel_timeout_id > 0) {
+		g_source_remove (desktop->initial_panel_timeout_id);
+		desktop->initial_panel_timeout_id = 0;
+	}
+
+	if (desktop->hide_panel_idle_id > 0)
+		return;
+
+	desktop->hide_panel_idle_id = g_idle_add (leave_panel_idle_cb, desktop);
+
+	return FALSE;
+}
+
+static gboolean
+panel_hide_timeout_cb (gpointer data)
+{
+	struct desktop *desktop = data;
+
+	panel_window_leave_cb (NULL, NULL, desktop);
+}
+
 static void
 panel_create(struct desktop *desktop)
 {
@@ -145,6 +239,10 @@ panel_create(struct desktop *desktop)
 	gtk_window_set_title(GTK_WINDOW(panel->window), "gtk shell");
 	gtk_window_set_decorated(GTK_WINDOW(panel->window), FALSE);
 	gtk_widget_realize(panel->window);
+
+	desktop->initial_panel_timeout_id = g_timeout_add_seconds(2,
+								  panel_hide_timeout_cb,
+								  desktop);
 
 	gtk_style_context_add_class (gtk_widget_get_style_context (panel->window),
 				     "wgs-panel");

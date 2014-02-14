@@ -9,6 +9,7 @@
 
 #include "weston-gtk-shell-resources.h"
 
+#include "app-icon.h"
 #include "clock.h"
 #include "favorites.h"
 #include "launcher-grid.h"
@@ -38,6 +39,10 @@ struct desktop {
 	struct element *launcher_grid;
 };
 
+/* TODO: guessed from the mockups, it'd be nice to have this in stone
+ * somewhere. */
+#define PANEL_HEIGHT_RATIO 0.73
+
 static void
 desktop_shell_configure(void *data,
 		struct desktop_shell *desktop_shell,
@@ -46,6 +51,7 @@ desktop_shell_configure(void *data,
 		int32_t width, int32_t height)
 {
 	struct desktop *desktop = data;
+	int window_height;
 
 	gtk_widget_set_size_request (desktop->background->window,
 				     width, height);
@@ -60,7 +66,13 @@ desktop_shell_configure(void *data,
 	gtk_widget_set_size_request (desktop->launcher_grid->window,
 				     width, height - 28);
 
-	gtk_window_resize (GTK_WINDOW (desktop->panel->window), width, 16);
+	/* TODO: make this height a little nicer */
+	window_height = height * PANEL_HEIGHT_RATIO;
+	gtk_window_resize (GTK_WINDOW (desktop->panel->window), 56, window_height);
+
+	shell_helper_move_surface(desktop->helper,
+				  desktop->panel->surface,
+				  0, (height - window_height) / 2);
 
 	desktop_shell_desktop_ready(desktop->shell);
 }
@@ -122,8 +134,8 @@ panel_create(struct desktop *desktop)
 {
 	GdkWindow *gdk_window;
 	struct element *panel;
-	GtkWidget *box1, *box2, *button;
-	GtkWidget *sound_applet, *popup;
+	GtkWidget *box1, *button;
+	GtkWidget *image; /* TODO */
 
 	panel = malloc(sizeof *panel);
 	memset(panel, 0, sizeof *panel);
@@ -134,31 +146,38 @@ panel_create(struct desktop *desktop)
 	gtk_window_set_decorated(GTK_WINDOW(panel->window), FALSE);
 	gtk_widget_realize(panel->window);
 
-	box1 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_style_context_add_class (gtk_widget_get_style_context (panel->window),
+				     "wgs-panel");
+
+	box1 = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	gtk_container_add (GTK_CONTAINER (panel->window), box1);
 
-	/* We have a box on the left and a box on the right set to expand
-	 * so that they both have the same size and thus the favorites end
-	 * exactly in the middle of the panel.
-	 */
-	box2 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	button = gtk_button_new_with_label ("Menu");
-	g_signal_connect (button, "clicked",
-			  G_CALLBACK (launcher_grid_toggle), desktop);
-	gtk_box_pack_start (GTK_BOX (box2), button, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (box1), box2, TRUE, TRUE, 0);
+	/* TODO: clock */
 
+	/* TODO: wifi */
+	image = gtk_image_new_from_icon_name ("network-wireless-signal-excellent-symbolic",
+					      GTK_ICON_SIZE_LARGE_TOOLBAR);
+	gtk_style_context_add_class (gtk_widget_get_style_context (image),
+				     "wgs-wifi");
+	gtk_box_pack_start (GTK_BOX (box1), image, FALSE, FALSE, 0);
+
+	/* TODO: sound */
+	image = gtk_image_new_from_icon_name ("audio-volume-high-symbolic",
+					      GTK_ICON_SIZE_LARGE_TOOLBAR);
+	gtk_style_context_add_class (gtk_widget_get_style_context (image),
+				     "wgs-audio");
+	gtk_box_pack_start (GTK_BOX (box1), image, FALSE, FALSE, 0);
+
+	/* favourites */
 	gtk_box_pack_start (GTK_BOX (box1), weston_gtk_favorites_new (), FALSE, FALSE, 0);
 
-	box2 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_end (GTK_BOX (box2), weston_gtk_clock_new (), FALSE, FALSE, 6);
+	/* menu */
+	button = weston_gtk_app_icon_new ("view-grid-symbolic");
+	g_signal_connect (button, "clicked",
+			  G_CALLBACK (launcher_grid_toggle), desktop);
+	gtk_box_pack_end (GTK_BOX (box1), button, FALSE, FALSE, 0);
 
-	sound_applet = weston_gtk_sound_applet_new ();
-	gtk_box_pack_end (GTK_BOX (box2), sound_applet, FALSE, FALSE, 6);
-	gtk_box_pack_end (GTK_BOX (box1), box2, TRUE, TRUE, 0);
-
-	gtk_widget_show_all (box1);
-
+	/* set it up as the panel */
 	gdk_window = gtk_widget_get_window(panel->window);
 	gdk_wayland_window_set_use_custom_surface(gdk_window);
 
@@ -166,6 +185,8 @@ panel_create(struct desktop *desktop)
 	desktop_shell_set_user_data(desktop->shell, desktop);
 	desktop_shell_set_panel(desktop->shell, desktop->output,
 				panel->surface);
+	desktop_shell_set_panel_position(desktop->shell,
+					 DESKTOP_SHELL_PANEL_POSITION_LEFT);
 
 	gtk_widget_show_all(panel->window);
 

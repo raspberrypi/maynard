@@ -12,6 +12,8 @@
 #include <gio/gdesktopappinfo.h>
 #include <gtk/gtk.h>
 
+#include "app-icon.h"
+
 enum {
   PROP_0,
 };
@@ -53,9 +55,8 @@ add_favorite (WestonGtkFavorites *self,
     return;
 
   icon = g_app_info_get_icon (G_APP_INFO (info));
-  image = gtk_image_new_from_gicon (icon, GTK_ICON_SIZE_MENU);
-  button = gtk_button_new ();
-  gtk_button_set_image (GTK_BUTTON (button), image);
+
+  button = weston_gtk_app_icon_new_from_gicon (icon);
 
   g_object_set_data_full (G_OBJECT (button), "info", info, g_object_unref);
 
@@ -130,5 +131,7 @@ weston_gtk_favorites_class_init (WestonGtkFavoritesClass *klass)
 GtkWidget *
 weston_gtk_favorites_new (void)
 {
-  return g_object_new (WESTON_GTK_TYPE_FAVORITES, NULL);
+  return g_object_new (WESTON_GTK_TYPE_FAVORITES,
+      "orientation", GTK_ORIENTATION_VERTICAL,
+      NULL);
 }

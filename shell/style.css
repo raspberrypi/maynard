@@ -1,0 +1,26 @@
+.wgs-panel {
+    background-color: alpha(black, 0.7);
+}
+
+.wgs-wifi {
+    background-color: #6d6d6d;
+    color: white;
+    padding: 16px;
+}
+
+.wgs-audio {
+    background-color: #b4b4b4;
+    color: white;
+    padding: 16px;
+}
+
+.wgs-apps {
+    color: #bebebe;
+}
+
+.wgs-apps:hover {
+    -GtkWidget-focus-line-width: 0px;
+    background-color: #1c1c1c;
+    background-image: none;
+    color: white;
+}

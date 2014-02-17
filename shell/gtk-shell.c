@@ -42,6 +42,13 @@ struct desktop {
 	guint initial_panel_timeout_id;
 	guint hide_panel_idle_id;
 
+	/* revealers that show and hide the small clock that's only
+	 * visible when the panel is half-hidden. these should be
+	 * moved from here and should live in the panel's private
+	 * data. */
+	GtkWidget *revealer_clock;
+	GtkWidget *revealer_buttons;
+
 	/* queue of widgets on which to connect to the
 	 * enter-notify-event signal so we know we're still on the
 	 * panel. */
@@ -174,6 +181,38 @@ launcher_grid_toggle (GtkWidget *widget, struct desktop *desktop)
 }
 
 static GtkWidget *
+small_clock_create (struct desktop *desktop)
+{
+	GtkWidget *box;
+	GtkWidget *label;
+
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+
+	label = gtk_label_new ("");
+	gtk_style_context_add_class (gtk_widget_get_style_context (label),
+				     "wgs-clock");
+	gtk_widget_set_size_request (label, 31, -1);
+	gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 0);
+
+	label = gtk_label_new ("");
+	gtk_label_set_markup (GTK_LABEL (label), "<span font=\"Droid Sans 12\">11\n"
+			      ":\n"
+			      "47</span>");
+	gtk_style_context_add_class (gtk_widget_get_style_context (label),
+				     "wgs-clock");
+	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_CENTER);
+	gtk_widget_set_size_request (label, 25, -1);
+	gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 0);
+
+	desktop->revealer_clock = gtk_revealer_new ();
+	gtk_revealer_set_transition_type (GTK_REVEALER (desktop->revealer_clock),
+					  GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT);
+	gtk_container_add (GTK_CONTAINER (desktop->revealer_clock), box);
+
+	return desktop->revealer_clock;
+}
+
+static GtkWidget *
 clock_create (struct desktop *desktop)
 {
 	struct element *clock;
@@ -226,6 +265,9 @@ panel_window_enter_cb (GtkWidget *widget,
 	shell_helper_slide_surface_back(desktop->helper,
 					desktop->clock->surface);
 
+	gtk_revealer_set_reveal_child (GTK_REVEALER (desktop->revealer_clock), FALSE);
+	gtk_revealer_set_reveal_child (GTK_REVEALER (desktop->revealer_buttons), TRUE);
+
 	return FALSE;
 }
 
@@ -246,6 +288,9 @@ leave_panel_idle_cb (gpointer data)
 	shell_helper_slide_surface(desktop->helper,
 				   desktop->clock->surface,
 				   25 - 56 - width, 0);
+
+	gtk_revealer_set_reveal_child (GTK_REVEALER (desktop->revealer_clock), TRUE);
+	gtk_revealer_set_reveal_child (GTK_REVEALER (desktop->revealer_buttons), FALSE);
 
 	return FALSE;
 }
@@ -281,7 +326,7 @@ panel_create(struct desktop *desktop)
 {
 	GdkWindow *gdk_window;
 	struct element *panel;
-	GtkWidget *box1, *ebox, *button;
+	GtkWidget *box1, *box2, *box3, *ebox, *button;
 	GtkWidget *image; /* TODO */
 
 	panel = malloc(sizeof *panel);
@@ -306,19 +351,40 @@ panel_create(struct desktop *desktop)
 	/* TODO: clock */
 	clock_create(desktop);
 
+	ebox = gtk_event_box_new ();
+	gtk_box_pack_start (GTK_BOX (box1), ebox, FALSE, FALSE, 0);
+
+	g_queue_push_tail (desktop->panel_widgets, ebox);
+
+	box2 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_container_add (GTK_CONTAINER (ebox), box2);
+
+	desktop->revealer_buttons = gtk_revealer_new ();
+	gtk_revealer_set_transition_type (GTK_REVEALER (desktop->revealer_buttons),
+					  GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT);
+	gtk_revealer_set_reveal_child (GTK_REVEALER (desktop->revealer_buttons), TRUE);
+	gtk_box_pack_start (GTK_BOX (box2), desktop->revealer_buttons, FALSE, FALSE, 0);
+
+	box3 = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+	gtk_container_add (GTK_CONTAINER (desktop->revealer_buttons), box3);
+
 	/* TODO: wifi */
 	image = gtk_image_new_from_icon_name ("network-wireless-signal-excellent-symbolic",
 					      GTK_ICON_SIZE_LARGE_TOOLBAR);
 	gtk_style_context_add_class (gtk_widget_get_style_context (image),
 				     "wgs-wifi");
-	gtk_box_pack_start (GTK_BOX (box1), image, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (box3), image, FALSE, FALSE, 0);
 
 	/* TODO: sound */
 	image = gtk_image_new_from_icon_name ("audio-volume-high-symbolic",
 					      GTK_ICON_SIZE_LARGE_TOOLBAR);
 	gtk_style_context_add_class (gtk_widget_get_style_context (image),
 				     "wgs-audio");
-	gtk_box_pack_start (GTK_BOX (box1), image, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (box3), image, FALSE, FALSE, 0);
+
+	/* TODO: small clock */
+	image = small_clock_create (desktop);
+	gtk_box_pack_start (GTK_BOX (box2), image, FALSE, FALSE, 0);
 
 	/* favourites */
 	ebox = gtk_event_box_new ();

@@ -281,7 +281,7 @@ panel_create(struct desktop *desktop)
 {
 	GdkWindow *gdk_window;
 	struct element *panel;
-	GtkWidget *box1, *button;
+	GtkWidget *box1, *ebox, *button;
 	GtkWidget *image; /* TODO */
 
 	panel = malloc(sizeof *panel);
@@ -321,13 +321,19 @@ panel_create(struct desktop *desktop)
 	gtk_box_pack_start (GTK_BOX (box1), image, FALSE, FALSE, 0);
 
 	/* favourites */
-	gtk_box_pack_start (GTK_BOX (box1), weston_gtk_favorites_new (), FALSE, FALSE, 0);
+	ebox = gtk_event_box_new ();
+	gtk_box_pack_start (GTK_BOX (box1), ebox, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (ebox), weston_gtk_favorites_new ());
+	g_queue_push_tail (desktop->panel_widgets, ebox);
 
 	/* menu */
+	ebox = gtk_event_box_new ();
+	gtk_box_pack_end (GTK_BOX (box1), ebox, FALSE, FALSE, 0);
 	button = weston_gtk_app_icon_new ("view-grid-symbolic");
 	g_signal_connect (button, "clicked",
 			  G_CALLBACK (launcher_grid_toggle), desktop);
-	gtk_box_pack_end (GTK_BOX (box1), button, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (ebox), button);
+	g_queue_push_tail (desktop->panel_widgets, ebox);
 
 	/* set it up as the panel */
 	gdk_window = gtk_widget_get_window(panel->window);

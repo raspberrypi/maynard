@@ -41,6 +41,11 @@ struct desktop {
 
 	guint initial_panel_timeout_id;
 	guint hide_panel_idle_id;
+
+	/* queue of widgets on which to connect to the
+	 * enter-notify-event signal so we know we're still on the
+	 * panel. */
+	GQueue *panel_widgets;
 };
 
 /* TODO: guessed from the mockups, it'd be nice to have this in stone
@@ -58,6 +63,7 @@ static gboolean
 connect_enter_leave_signals (gpointer data)
 {
 	struct desktop *desktop = data;
+	GList *l;
 
 	g_signal_connect (desktop->panel->window, "enter-notify-event",
 			  G_CALLBACK (panel_window_enter_cb), desktop);
@@ -68,6 +74,11 @@ connect_enter_leave_signals (gpointer data)
 			  G_CALLBACK (panel_window_enter_cb), desktop);
 	g_signal_connect (desktop->clock->window, "leave-notify-event",
 			  G_CALLBACK (panel_window_leave_cb), desktop);
+
+	for (l = desktop->panel_widgets->head; l != NULL; l = l->next) {
+		g_signal_connect (l->data, "enter-notify-event",
+				  G_CALLBACK (panel_window_enter_cb), desktop);
+	}
 
 	return FALSE;
 }
@@ -465,6 +476,7 @@ main(int argc, char *argv[])
 	desktop->output = NULL;
 	desktop->shell = NULL;
 	desktop->helper = NULL;
+	desktop->panel_widgets = g_queue_new ();
 
 	desktop->gdk_display = gdk_display_get_default();
 	desktop->display =

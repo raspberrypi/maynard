@@ -25,6 +25,10 @@ weston_gtk_shell_SOURCES =			\
 	shell-app-system.h			\
 	sound-applet.c				\
 	sound-applet.h				\
+	panel.c					\
+	panel.h					\
+	vertical-clock.c			\
+	vertical-clock.h			\
 	weston-gtk-shell-resources.c		\
 	weston-gtk-shell-resources.h		\
 	desktop-shell-client-protocol.h		\

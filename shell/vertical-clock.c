@@ -8,10 +8,15 @@
 
 #include "vertical-clock.h"
 
+#define GNOME_DESKTOP_USE_UNSTABLE_API
+#include <libgnome-desktop/gnome-wall-clock.h>
+
 #include "panel.h"
 
 struct WestonGtkVerticalClockPrivate {
   GtkWidget *label;
+
+  GnomeWallClock *wall_clock;
 };
 
 G_DEFINE_TYPE(WestonGtkVerticalClock, weston_gtk_vertical_clock, GTK_TYPE_BOX)
@@ -30,6 +35,26 @@ weston_gtk_vertical_clock_init (WestonGtkVerticalClock *self)
 }
 
 static void
+wall_clock_notify_cb (GnomeWallClock *wall_clock,
+    GParamSpec *pspec,
+    WestonGtkVerticalClock *self)
+{
+  GDateTime *datetime;
+  gchar *str;
+
+  datetime = g_date_time_new_now_local ();
+
+  str = g_date_time_format (datetime,
+      "<span font=\"Droid Sans 12\">%H\n"
+      ":\n"
+      "%M</span>");
+  gtk_label_set_markup (GTK_LABEL (self->priv->label), str);
+
+  g_free (str);
+  g_date_time_unref (datetime);
+}
+
+static void
 weston_gtk_vertical_clock_constructed (GObject *object)
 {
   WestonGtkVerticalClock *self = WESTON_GTK_VERTICAL_CLOCK (object);
@@ -37,6 +62,10 @@ weston_gtk_vertical_clock_constructed (GObject *object)
   gint width;
 
   G_OBJECT_CLASS (weston_gtk_vertical_clock_parent_class)->constructed (object);
+
+  self->priv->wall_clock = g_object_new (GNOME_TYPE_WALL_CLOCK, NULL);
+  g_signal_connect (self->priv->wall_clock, "notify::clock",
+      G_CALLBACK (wall_clock_notify_cb), self);
 
   gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
 
@@ -51,16 +80,14 @@ weston_gtk_vertical_clock_constructed (GObject *object)
 
   /* the actual clock label */
   self->priv->label = gtk_label_new ("");
-  gtk_label_set_markup (GTK_LABEL (self->priv->label),
-      "<span font=\"Droid Sans 12\">11\n"
-      ":\n"
-      "47</span>");
   gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->label),
       "wgs-clock");
   gtk_label_set_justify (GTK_LABEL (self->priv->label), GTK_JUSTIFY_CENTER);
   gtk_widget_set_size_request (self->priv->label,
       WESTON_GTK_VERTICAL_CLOCK_WIDTH, -1);
   gtk_box_pack_start (GTK_BOX (self), self->priv->label, FALSE, FALSE, 0);
+
+  wall_clock_notify_cb (self->priv->wall_clock, NULL, self);
 }
 
 static void

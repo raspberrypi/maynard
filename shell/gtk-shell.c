@@ -216,25 +216,12 @@ static GtkWidget *
 clock_create (struct desktop *desktop)
 {
 	struct element *clock;
-	GtkWidget *widget;
 	GdkWindow *gdk_window;
 
 	clock = malloc(sizeof *clock);
 	memset(clock, 0, sizeof *clock);
 
-	clock->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(clock->window), "gtk shell");
-	gtk_window_set_decorated(GTK_WINDOW(clock->window), FALSE);
-	gtk_widget_realize(clock->window);
-
-	gtk_style_context_add_class (gtk_widget_get_style_context (clock->window),
-				     "wgs-clock");
-
-	widget = gtk_label_new ("");
-	gtk_label_set_markup (GTK_LABEL (widget), "<span font=\"Droid Sans 32\">11:47</span>\n"
-			      "<span font=\"Droid Sans 12\">13/02/2014</span>");
-	gtk_label_set_justify (GTK_LABEL (widget), GTK_JUSTIFY_CENTER);
-	gtk_container_add (GTK_CONTAINER (clock->window), widget);
+	clock->window = weston_gtk_clock_new();
 
 	gdk_window = gtk_widget_get_window(clock->window);
 	clock->surface = gdk_wayland_window_get_wl_surface(gdk_window);

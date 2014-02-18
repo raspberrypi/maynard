@@ -1,13 +1,15 @@
 /*
- * Copyright (C) 2013 Collabora Ltd.
+ * Copyright (C) 2014 Collabora Ltd.
  *
- * Author: Emilio Pozuelo Monfort <emilio.pozuelo@collabora.co.uk>
+ * Author: Jonny Lamb <jonny.lamb@collabora.co.uk>
  */
 
 #ifndef __WESTON_GTK_CLOCK_H__
 #define __WESTON_GTK_CLOCK_H__
 
 #include <gtk/gtk.h>
+
+#include "panel.h"
 
 #define WESTON_GTK_CLOCK_TYPE                 (weston_gtk_clock_get_type ())
 #define WESTON_GTK_CLOCK(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), WESTON_GTK_CLOCK_TYPE, WestonGtkClock))
@@ -22,17 +24,21 @@ typedef struct WestonGtkClockPrivate WestonGtkClockPrivate;
 
 struct WestonGtkClock
 {
-  GtkLabel parent;
+  GtkWindow parent;
 
   WestonGtkClockPrivate *priv;
 };
 
 struct WestonGtkClockClass
 {
-  GtkLabelClass parent_class;
+  GtkWindowClass parent_class;
 };
 
-GType      weston_gtk_clock_get_type       (void) G_GNUC_CONST;
-GtkWidget *weston_gtk_clock_new            (void);
+#define WESTON_GTK_CLOCK_WIDTH (WESTON_GTK_PANEL_WIDTH * 2.6)
+#define WESTON_GTK_CLOCK_HEIGHT (WESTON_GTK_PANEL_WIDTH * 2)
+
+GType weston_gtk_clock_get_type (void) G_GNUC_CONST;
+
+GtkWidget * weston_gtk_clock_new (void);
 
 #endif /* __WESTON_GTK_CLOCK_H__ */

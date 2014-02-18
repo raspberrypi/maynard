@@ -92,17 +92,21 @@ desktop_shell_configure(void *data,
 
 	/* TODO: make this height a little nicer */
 	window_height = height * PANEL_HEIGHT_RATIO;
-	gtk_window_resize (GTK_WINDOW (desktop->panel->window), 56, window_height);
+	gtk_window_resize (GTK_WINDOW (desktop->panel->window),
+			   WESTON_GTK_PANEL_WIDTH, window_height);
 
 	shell_helper_move_surface(desktop->helper,
 				  desktop->panel->surface,
 				  0, (height - window_height) / 2);
 
-	gtk_window_resize (GTK_WINDOW (desktop->clock->window), 56*2.6, 56*2);
+	gtk_window_resize (GTK_WINDOW (desktop->clock->window),
+			   WESTON_GTK_CLOCK_WIDTH,
+			   WESTON_GTK_CLOCK_HEIGHT);
 
 	shell_helper_move_surface(desktop->helper,
 				  desktop->clock->surface,
-				  56, (height - window_height) / 2);
+				  WESTON_GTK_PANEL_WIDTH,
+				  (height - window_height) / 2);
 
 	desktop_shell_desktop_ready(desktop->shell);
 
@@ -223,10 +227,10 @@ leave_panel_idle_cb (gpointer data)
 
 	shell_helper_slide_surface(desktop->helper,
 				   desktop->panel->surface,
-				   -31, 0);
+				   WESTON_GTK_VERTICAL_CLOCK_WIDTH - WESTON_GTK_PANEL_WIDTH, 0);
 	shell_helper_slide_surface(desktop->helper,
 				   desktop->clock->surface,
-				   25 - 56 - width, 0);
+				   WESTON_GTK_VERTICAL_CLOCK_WIDTH - WESTON_GTK_PANEL_WIDTH - width, 0);
 
 	weston_gtk_panel_set_expand(WESTON_GTK_PANEL(desktop->panel->window),
 				    FALSE);

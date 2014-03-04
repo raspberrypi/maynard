@@ -29,6 +29,8 @@ weston_gtk_shell_SOURCES =			\
 	panel.h					\
 	vertical-clock.c			\
 	vertical-clock.h			\
+	launcher.c				\
+	launcher.h				\
 	weston-gtk-shell-resources.c		\
 	weston-gtk-shell-resources.h		\
 	desktop-shell-client-protocol.h		\

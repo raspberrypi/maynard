@@ -29,3 +29,21 @@
     background-color: #929292;
     color: white;
 }
+
+.wgs-grid {
+    background-color: alpha(white, 0.5);
+}
+
+.wgs-grid-item {
+    background-color: alpha(black, 0.7);
+    color: white;
+    font: Droid Sans 12;
+    border-style: solid;
+    border-color: #6d6d6d;
+    border-width: 1px;
+    border-radius: 1px;
+}
+
+.wgs-grid-label {
+    background-color: #929292;
+}

@@ -12,7 +12,7 @@
 #include "app-icon.h"
 #include "clock.h"
 #include "favorites.h"
-#include "launcher-grid.h"
+#include "launcher.h"
 #include "panel.h"
 #include "vertical-clock.h"
 
@@ -79,17 +79,21 @@ desktop_shell_configure(void *data,
 {
 	struct desktop *desktop = data;
 	int window_height;
+	int grid_width, grid_height;
 
 	gtk_widget_set_size_request (desktop->background->window,
 				     width, height);
-
-	gtk_widget_set_size_request (desktop->launcher_grid->window,
-				     width - 56, height);
 
 	/* TODO: make this height a little nicer */
 	window_height = height * WESTON_GTK_PANEL_HEIGHT_RATIO;
 	gtk_window_resize (GTK_WINDOW (desktop->panel->window),
 			   WESTON_GTK_PANEL_WIDTH, window_height);
+
+	weston_gtk_launcher_calculate (WESTON_GTK_LAUNCHER(desktop->launcher_grid->window),
+				       &grid_width, &grid_height, NULL);
+	gtk_widget_set_size_request (desktop->launcher_grid->window,
+				     grid_width,
+				     grid_height);
 
 	shell_helper_move_surface(desktop->helper,
 				  desktop->panel->surface,
@@ -103,6 +107,11 @@ desktop_shell_configure(void *data,
 				  desktop->clock->surface,
 				  WESTON_GTK_PANEL_WIDTH,
 				  (height - window_height) / 2);
+
+	shell_helper_move_surface(desktop->helper,
+				  desktop->launcher_grid->surface,
+				  - grid_width,
+				  ((height - window_height) / 2) + WESTON_GTK_CLOCK_HEIGHT);
 
 	desktop_shell_desktop_ready(desktop->shell);
 
@@ -135,33 +144,18 @@ static void
 launcher_grid_create (struct desktop *desktop)
 {
 	struct element *launcher_grid;
-	GtkWidget *grid;
+	GdkWindow *gdk_window;
 
 	launcher_grid = malloc (sizeof *launcher_grid);
 	memset (launcher_grid, 0, sizeof *launcher_grid);
 
-	launcher_grid->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	launcher_grid->window = weston_gtk_launcher_new (desktop->background->window);
+	gdk_window = gtk_widget_get_window(launcher_grid->window);
+	launcher_grid->surface = gdk_wayland_window_get_wl_surface(gdk_window);
 
-	gtk_window_set_title(GTK_WINDOW(launcher_grid->window), "gtk shell");
-	gtk_window_set_decorated(GTK_WINDOW(launcher_grid->window), FALSE);
-	gtk_widget_realize(launcher_grid->window);
-
-	grid = launcher_grid_new ();
-
-	gtk_container_add (GTK_CONTAINER (launcher_grid->window), grid);
-
-	gtk_widget_show_all (grid);
+	gtk_widget_show_all(launcher_grid->window);
 
 	desktop->launcher_grid = launcher_grid;
-}
-
-static void
-launcher_grid_toggle (GtkWidget *widget, struct desktop *desktop)
-{
-	gboolean grid_visible;
-
-	grid_visible = gtk_widget_is_visible (desktop->launcher_grid->window);
-	gtk_widget_set_visible (desktop->launcher_grid->window, !grid_visible);
 }
 
 static GtkWidget *
@@ -445,8 +439,8 @@ main(int argc, char *argv[])
 	css_setup(desktop);
 	panel_create(desktop);
 	clock_create(desktop);
-	launcher_grid_create (desktop);
 	background_create(desktop);
+	launcher_grid_create (desktop);
 
 	gtk_main();
 

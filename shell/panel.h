@@ -33,6 +33,7 @@ struct WestonGtkPanelClass
 };
 
 #define WESTON_GTK_PANEL_WIDTH 56
+#define WESTON_GTK_PANEL_HEIGHT_RATIO 0.73
 
 GType weston_gtk_panel_get_type (void) G_GNUC_CONST;
 

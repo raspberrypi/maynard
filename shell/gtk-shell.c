@@ -44,10 +44,6 @@ struct desktop {
 	guint hide_panel_idle_id;
 };
 
-/* TODO: guessed from the mockups, it'd be nice to have this in stone
- * somewhere. */
-#define PANEL_HEIGHT_RATIO 0.73
-
 static gboolean panel_window_enter_cb (GtkWidget *widget,
 				       GdkEventCrossing *event,
 				       struct desktop *desktop);
@@ -91,7 +87,7 @@ desktop_shell_configure(void *data,
 				     width - 56, height);
 
 	/* TODO: make this height a little nicer */
-	window_height = height * PANEL_HEIGHT_RATIO;
+	window_height = height * WESTON_GTK_PANEL_HEIGHT_RATIO;
 	gtk_window_resize (GTK_WINDOW (desktop->panel->window),
 			   WESTON_GTK_PANEL_WIDTH, window_height);
 

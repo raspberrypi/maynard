@@ -3,24 +3,14 @@ libexec_PROGRAMS = weston-gtk-shell
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = $(CLIENT_CFLAGS) $(GTK_CFLAGS)
 
-external_sources =				\
-	egg-flow-box-accessible.c		\
-	egg-flow-box-accessible.h		\
-	egg-flow-box.c				\
-	egg-flow-box.h
-
 weston_gtk_shell_SOURCES =			\
 	gtk-shell.c				\
 	app-icon.c				\
 	app-icon.h				\
-	app-launcher.c				\
-	app-launcher.h				\
 	clock.c					\
 	clock.h					\
 	favorites.c				\
 	favorites.h				\
-	launcher-grid.c				\
-	launcher-grid.h				\
 	shell-app-system.c			\
 	shell-app-system.h			\
 	sound-applet.c				\
@@ -36,8 +26,7 @@ weston_gtk_shell_SOURCES =			\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	shell-helper-client-protocol.h		\
-	shell-helper-protocol.c			\
-	$(external_sources)
+	shell-helper-protocol.c
 weston_gtk_shell_LDADD = $(GTK_LIBS)
 
 BUILT_SOURCES =					\

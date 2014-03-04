@@ -42,6 +42,8 @@ struct desktop {
 
 	guint initial_panel_timeout_id;
 	guint hide_panel_idle_id;
+
+	gboolean grid_visible;
 };
 
 static gboolean panel_window_enter_cb (GtkWidget *widget,
@@ -65,6 +67,11 @@ connect_enter_leave_signals (gpointer data)
 	g_signal_connect (desktop->clock->window, "enter-notify-event",
 			  G_CALLBACK (panel_window_enter_cb), desktop);
 	g_signal_connect (desktop->clock->window, "leave-notify-event",
+			  G_CALLBACK (panel_window_leave_cb), desktop);
+
+	g_signal_connect (desktop->launcher_grid->window, "enter-notify-event",
+			  G_CALLBACK (panel_window_enter_cb), desktop);
+	g_signal_connect (desktop->launcher_grid->window, "leave-notify-event",
 			  G_CALLBACK (panel_window_leave_cb), desktop);
 
 	return FALSE;
@@ -141,6 +148,26 @@ static const struct desktop_shell_listener listener = {
 };
 
 static void
+launcher_grid_toggle (GtkWidget *widget, struct desktop *desktop)
+{
+	if (desktop->grid_visible) {
+		shell_helper_slide_surface_back(desktop->helper,
+						desktop->launcher_grid->surface);
+	} else {
+		int width;
+
+		gtk_widget_get_size_request (desktop->launcher_grid->window,
+					     &width, NULL);
+
+		shell_helper_slide_surface(desktop->helper,
+					   desktop->launcher_grid->surface,
+					   width + WESTON_GTK_PANEL_WIDTH, 0);
+	}
+
+	desktop->grid_visible = !desktop->grid_visible;
+}
+
+static void
 launcher_grid_create (struct desktop *desktop)
 {
 	struct element *launcher_grid;
@@ -152,6 +179,9 @@ launcher_grid_create (struct desktop *desktop)
 	launcher_grid->window = weston_gtk_launcher_new (desktop->background->window);
 	gdk_window = gtk_widget_get_window(launcher_grid->window);
 	launcher_grid->surface = gdk_wayland_window_get_wl_surface(gdk_window);
+
+	g_signal_connect(launcher_grid->window, "app-launched",
+			 G_CALLBACK(launcher_grid_toggle), desktop);
 
 	gtk_widget_show_all(launcher_grid->window);
 
@@ -239,6 +269,9 @@ panel_window_leave_cb (GtkWidget *widget,
 	}
 
 	if (desktop->hide_panel_idle_id > 0)
+		return;
+
+	if (desktop->grid_visible)
 		return;
 
 	desktop->hide_panel_idle_id = g_idle_add (leave_panel_idle_cb, desktop);
@@ -435,6 +468,8 @@ main(int argc, char *argv[])
 	 * shell, and shell helper objects */
 	while (!desktop->output || !desktop->shell || !desktop->helper)
 		wl_display_roundtrip (desktop->display);
+
+	desktop->grid_visible = FALSE;
 
 	css_setup(desktop);
 	panel_create(desktop);

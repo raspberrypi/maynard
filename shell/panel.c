@@ -18,33 +18,33 @@ enum {
 };
 static guint signals[N_SIGNALS] = { 0 };
 
-struct WestonGtkPanelPrivate {
+struct MaynardPanelPrivate {
   gboolean hidden;
 
   GtkWidget *revealer_buttons; /* for the wifi and sound buttons */
   GtkWidget *revealer_clock; /* for the vertical clock */
 };
 
-G_DEFINE_TYPE(WestonGtkPanel, weston_gtk_panel, GTK_TYPE_WINDOW)
+G_DEFINE_TYPE(MaynardPanel, maynard_panel, GTK_TYPE_WINDOW)
 
 static void
-weston_gtk_panel_init (WestonGtkPanel *self)
+maynard_panel_init (MaynardPanel *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      WESTON_GTK_PANEL_TYPE,
-      WestonGtkPanelPrivate);
+      MAYNARD_PANEL_TYPE,
+      MaynardPanelPrivate);
 }
 
 static gboolean
 widget_enter_notify_event_cb (GtkWidget *widget,
     GdkEventCrossing *event,
-    WestonGtkPanel *self)
+    MaynardPanel *self)
 {
   g_signal_emit_by_name (self, "enter-notify-event", event);
 }
 
 static void
-widget_connect_enter_signal (WestonGtkPanel *self,
+widget_connect_enter_signal (MaynardPanel *self,
     GtkWidget *widget)
 {
   g_signal_connect (widget, "enter-notify-event",
@@ -53,21 +53,21 @@ widget_connect_enter_signal (WestonGtkPanel *self,
 
 static void
 app_menu_button_clicked_cb (GtkButton *button,
-    WestonGtkPanel *self)
+    MaynardPanel *self)
 {
   g_signal_emit (self, signals[APP_MENU_TOGGLED], 0);
 }
 
 static void
-weston_gtk_panel_constructed (GObject *object)
+maynard_panel_constructed (GObject *object)
 {
-  WestonGtkPanel *self = WESTON_GTK_PANEL (object);
+  MaynardPanel *self = MAYNARD_PANEL (object);
   GtkWidget *main_box, *menu_box, *buttons_box;
   GtkWidget *ebox;
   GtkWidget *image;
   GtkWidget *button;
 
-  G_OBJECT_CLASS (weston_gtk_panel_parent_class)->constructed (object);
+  G_OBJECT_CLASS (maynard_panel_parent_class)->constructed (object);
 
   /* window properties */
   gtk_window_set_title (GTK_WINDOW (self), "gtk shell");
@@ -140,20 +140,20 @@ weston_gtk_panel_constructed (GObject *object)
 
   /* vertical clock */
   gtk_container_add (GTK_CONTAINER (self->priv->revealer_clock),
-      weston_gtk_vertical_clock_new ());
+      maynard_vertical_clock_new ());
 
   /* end of the menu buttons and vertical clock */
 
   /* favorites */
   ebox = gtk_event_box_new ();
   gtk_box_pack_start (GTK_BOX (main_box), ebox, FALSE, FALSE, 0);
-  gtk_container_add (GTK_CONTAINER (ebox), weston_gtk_favorites_new ());
+  gtk_container_add (GTK_CONTAINER (ebox), maynard_favorites_new ());
   widget_connect_enter_signal (self, ebox);
 
   /* bottom app menu button */
   ebox = gtk_event_box_new ();
   gtk_box_pack_end (GTK_BOX (main_box), ebox, FALSE, FALSE, 0);
-  button = weston_gtk_app_icon_new ("view-grid-symbolic");
+  button = maynard_app_icon_new ("view-grid-symbolic");
   g_signal_connect (button, "clicked",
       G_CALLBACK (app_menu_button_clicked_cb), self);
   gtk_container_add (GTK_CONTAINER (ebox), button);
@@ -164,29 +164,29 @@ weston_gtk_panel_constructed (GObject *object)
 }
 
 static void
-weston_gtk_panel_class_init (WestonGtkPanelClass *klass)
+maynard_panel_class_init (MaynardPanelClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *)klass;
   GParamSpec *param_spec;
 
-  object_class->constructed = weston_gtk_panel_constructed;
+  object_class->constructed = maynard_panel_constructed;
 
   signals[APP_MENU_TOGGLED] = g_signal_new ("app-menu-toggled",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
 
-  g_type_class_add_private (object_class, sizeof (WestonGtkPanelPrivate));
+  g_type_class_add_private (object_class, sizeof (MaynardPanelPrivate));
 }
 
 GtkWidget *
-weston_gtk_panel_new (void)
+maynard_panel_new (void)
 {
-  return g_object_new (WESTON_GTK_PANEL_TYPE,
+  return g_object_new (MAYNARD_PANEL_TYPE,
       NULL);
 }
 
 void
-weston_gtk_panel_set_expand (WestonGtkPanel *self,
+maynard_panel_set_expand (MaynardPanel *self,
     gboolean expand)
 {
   gtk_revealer_set_reveal_child (GTK_REVEALER (self->priv->revealer_buttons), expand);

@@ -4,40 +4,40 @@
  * Author: Jonny Lamb <jonny.lamb@collabora.co.uk>
  */
 
-#ifndef __WESTON_GTK_LAUNCHER_H__
-#define __WESTON_GTK_LAUNCHER_H__
+#ifndef __MAYNARD_LAUNCHER_H__
+#define __MAYNARD_LAUNCHER_H__
 
 #include <gtk/gtk.h>
 
-#define WESTON_GTK_LAUNCHER_TYPE                 (weston_gtk_launcher_get_type ())
-#define WESTON_GTK_LAUNCHER(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), WESTON_GTK_LAUNCHER_TYPE, WestonGtkLauncher))
-#define WESTON_GTK_LAUNCHER_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), WESTON_GTK_LAUNCHER_TYPE, WestonGtkLauncherClass))
-#define WESTON_GTK_IS_LAUNCHER(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), WESTON_GTK_LAUNCHER_TYPE))
-#define WESTON_GTK_IS_LAUNCHER_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), WESTON_GTK_LAUNCHER_TYPE))
-#define WESTON_GTK_LAUNCHER_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), WESTON_GTK_LAUNCHER_TYPE, WestonGtkLauncherClass))
+#define MAYNARD_LAUNCHER_TYPE                 (maynard_launcher_get_type ())
+#define MAYNARD_LAUNCHER(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MAYNARD_LAUNCHER_TYPE, MaynardLauncher))
+#define MAYNARD_LAUNCHER_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), MAYNARD_LAUNCHER_TYPE, MaynardLauncherClass))
+#define MAYNARD_IS_LAUNCHER(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MAYNARD_LAUNCHER_TYPE))
+#define MAYNARD_IS_LAUNCHER_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MAYNARD_LAUNCHER_TYPE))
+#define MAYNARD_LAUNCHER_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MAYNARD_LAUNCHER_TYPE, MaynardLauncherClass))
 
-typedef struct WestonGtkLauncher WestonGtkLauncher;
-typedef struct WestonGtkLauncherClass WestonGtkLauncherClass;
-typedef struct WestonGtkLauncherPrivate WestonGtkLauncherPrivate;
+typedef struct MaynardLauncher MaynardLauncher;
+typedef struct MaynardLauncherClass MaynardLauncherClass;
+typedef struct MaynardLauncherPrivate MaynardLauncherPrivate;
 
-struct WestonGtkLauncher
+struct MaynardLauncher
 {
   GtkWindow parent;
 
-  WestonGtkLauncherPrivate *priv;
+  MaynardLauncherPrivate *priv;
 };
 
-struct WestonGtkLauncherClass
+struct MaynardLauncherClass
 {
   GtkWindowClass parent_class;
 };
 
-GType weston_gtk_launcher_get_type (void) G_GNUC_CONST;
+GType maynard_launcher_get_type (void) G_GNUC_CONST;
 
-GtkWidget * weston_gtk_launcher_new (GtkWidget *background_widget);
+GtkWidget * maynard_launcher_new (GtkWidget *background_widget);
 
-void weston_gtk_launcher_calculate (WestonGtkLauncher *self,
+void maynard_launcher_calculate (MaynardLauncher *self,
     gint *grid_window_width, gint *grid_window_height,
     gint *grid_cols);
 
-#endif /* __WESTON_GTK_LAUNCHER_H__ */
+#endif /* __MAYNARD_LAUNCHER_H__ */

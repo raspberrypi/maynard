@@ -92,11 +92,11 @@ desktop_shell_configure(void *data,
 				     width, height);
 
 	/* TODO: make this height a little nicer */
-	window_height = height * WESTON_GTK_PANEL_HEIGHT_RATIO;
+	window_height = height * MAYNARD_PANEL_HEIGHT_RATIO;
 	gtk_window_resize (GTK_WINDOW (desktop->panel->window),
-			   WESTON_GTK_PANEL_WIDTH, window_height);
+			   MAYNARD_PANEL_WIDTH, window_height);
 
-	weston_gtk_launcher_calculate (WESTON_GTK_LAUNCHER(desktop->launcher_grid->window),
+	maynard_launcher_calculate (MAYNARD_LAUNCHER(desktop->launcher_grid->window),
 				       &grid_width, &grid_height, NULL);
 	gtk_widget_set_size_request (desktop->launcher_grid->window,
 				     grid_width,
@@ -107,18 +107,18 @@ desktop_shell_configure(void *data,
 				  0, (height - window_height) / 2);
 
 	gtk_window_resize (GTK_WINDOW (desktop->clock->window),
-			   WESTON_GTK_CLOCK_WIDTH,
-			   WESTON_GTK_CLOCK_HEIGHT);
+			   MAYNARD_CLOCK_WIDTH,
+			   MAYNARD_CLOCK_HEIGHT);
 
 	shell_helper_move_surface(desktop->helper,
 				  desktop->clock->surface,
-				  WESTON_GTK_PANEL_WIDTH,
+				  MAYNARD_PANEL_WIDTH,
 				  (height - window_height) / 2);
 
 	shell_helper_move_surface(desktop->helper,
 				  desktop->launcher_grid->surface,
 				  - grid_width,
-				  ((height - window_height) / 2) + WESTON_GTK_CLOCK_HEIGHT);
+				  ((height - window_height) / 2) + MAYNARD_CLOCK_HEIGHT);
 
 	desktop_shell_desktop_ready(desktop->shell);
 
@@ -161,7 +161,7 @@ launcher_grid_toggle (GtkWidget *widget, struct desktop *desktop)
 
 		shell_helper_slide_surface(desktop->helper,
 					   desktop->launcher_grid->surface,
-					   width + WESTON_GTK_PANEL_WIDTH, 0);
+					   width + MAYNARD_PANEL_WIDTH, 0);
 	}
 
 	desktop->grid_visible = !desktop->grid_visible;
@@ -176,7 +176,7 @@ launcher_grid_create (struct desktop *desktop)
 	launcher_grid = malloc (sizeof *launcher_grid);
 	memset (launcher_grid, 0, sizeof *launcher_grid);
 
-	launcher_grid->window = weston_gtk_launcher_new (desktop->background->window);
+	launcher_grid->window = maynard_launcher_new (desktop->background->window);
 	gdk_window = gtk_widget_get_window(launcher_grid->window);
 	launcher_grid->surface = gdk_wayland_window_get_wl_surface(gdk_window);
 
@@ -197,7 +197,7 @@ clock_create (struct desktop *desktop)
 	clock = malloc(sizeof *clock);
 	memset(clock, 0, sizeof *clock);
 
-	clock->window = weston_gtk_clock_new();
+	clock->window = maynard_clock_new();
 
 	gdk_window = gtk_widget_get_window(clock->window);
 	clock->surface = gdk_wayland_window_get_wl_surface(gdk_window);
@@ -228,7 +228,7 @@ panel_window_enter_cb (GtkWidget *widget,
 	shell_helper_slide_surface_back(desktop->helper,
 					desktop->clock->surface);
 
-	weston_gtk_panel_set_expand(WESTON_GTK_PANEL(desktop->panel->window),
+	maynard_panel_set_expand(MAYNARD_PANEL(desktop->panel->window),
 				    TRUE);
 
 	return FALSE;
@@ -247,12 +247,12 @@ leave_panel_idle_cb (gpointer data)
 
 	shell_helper_slide_surface(desktop->helper,
 				   desktop->panel->surface,
-				   WESTON_GTK_VERTICAL_CLOCK_WIDTH - WESTON_GTK_PANEL_WIDTH, 0);
+				   MAYNARD_VERTICAL_CLOCK_WIDTH - MAYNARD_PANEL_WIDTH, 0);
 	shell_helper_slide_surface(desktop->helper,
 				   desktop->clock->surface,
-				   WESTON_GTK_VERTICAL_CLOCK_WIDTH - WESTON_GTK_PANEL_WIDTH - width, 0);
+				   MAYNARD_VERTICAL_CLOCK_WIDTH - MAYNARD_PANEL_WIDTH - width, 0);
 
-	weston_gtk_panel_set_expand(WESTON_GTK_PANEL(desktop->panel->window),
+	maynard_panel_set_expand(MAYNARD_PANEL(desktop->panel->window),
 				    FALSE);
 
 	return FALSE;
@@ -296,7 +296,7 @@ panel_create(struct desktop *desktop)
 	panel = malloc(sizeof *panel);
 	memset(panel, 0, sizeof *panel);
 
-	panel->window = weston_gtk_panel_new();
+	panel->window = maynard_panel_new();
 
 	g_signal_connect(panel->window, "app-menu-toggled",
 			 G_CALLBACK(launcher_grid_toggle), desktop);

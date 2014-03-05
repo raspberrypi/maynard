@@ -4,41 +4,41 @@
  * Author: Jonny Lamb <jonny.lamb@collabora.co.uk>
  */
 
-#ifndef __WESTON_GTK_PANEL_H__
-#define __WESTON_GTK_PANEL_H__
+#ifndef __MAYNARD_PANEL_H__
+#define __MAYNARD_PANEL_H__
 
 #include <gtk/gtk.h>
 
-#define WESTON_GTK_PANEL_TYPE                 (weston_gtk_panel_get_type ())
-#define WESTON_GTK_PANEL(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), WESTON_GTK_PANEL_TYPE, WestonGtkPanel))
-#define WESTON_GTK_PANEL_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), WESTON_GTK_PANEL_TYPE, WestonGtkPanelClass))
-#define WESTON_GTK_IS_PANEL(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), WESTON_GTK_PANEL_TYPE))
-#define WESTON_GTK_IS_PANEL_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), WESTON_GTK_PANEL_TYPE))
-#define WESTON_GTK_PANEL_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), WESTON_GTK_PANEL_TYPE, WestonGtkPanelClass))
+#define MAYNARD_PANEL_TYPE                 (maynard_panel_get_type ())
+#define MAYNARD_PANEL(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MAYNARD_PANEL_TYPE, MaynardPanel))
+#define MAYNARD_PANEL_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), MAYNARD_PANEL_TYPE, MaynardPanelClass))
+#define MAYNARD_IS_PANEL(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MAYNARD_PANEL_TYPE))
+#define MAYNARD_IS_PANEL_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MAYNARD_PANEL_TYPE))
+#define MAYNARD_PANEL_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MAYNARD_PANEL_TYPE, MaynardPanelClass))
 
-typedef struct WestonGtkPanel WestonGtkPanel;
-typedef struct WestonGtkPanelClass WestonGtkPanelClass;
-typedef struct WestonGtkPanelPrivate WestonGtkPanelPrivate;
+typedef struct MaynardPanel MaynardPanel;
+typedef struct MaynardPanelClass MaynardPanelClass;
+typedef struct MaynardPanelPrivate MaynardPanelPrivate;
 
-struct WestonGtkPanel
+struct MaynardPanel
 {
   GtkWindow parent;
 
-  WestonGtkPanelPrivate *priv;
+  MaynardPanelPrivate *priv;
 };
 
-struct WestonGtkPanelClass
+struct MaynardPanelClass
 {
   GtkWindowClass parent_class;
 };
 
-#define WESTON_GTK_PANEL_WIDTH 56
-#define WESTON_GTK_PANEL_HEIGHT_RATIO 0.73
+#define MAYNARD_PANEL_WIDTH 56
+#define MAYNARD_PANEL_HEIGHT_RATIO 0.73
 
-GType weston_gtk_panel_get_type (void) G_GNUC_CONST;
+GType maynard_panel_get_type (void) G_GNUC_CONST;
 
-GtkWidget * weston_gtk_panel_new (void);
+GtkWidget * maynard_panel_new (void);
 
-void weston_gtk_panel_set_expand (WestonGtkPanel *self, gboolean expand);
+void maynard_panel_set_expand (MaynardPanel *self, gboolean expand);
 
-#endif /* __WESTON_GTK_PANEL_H__ */
+#endif /* __MAYNARD_PANEL_H__ */

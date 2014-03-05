@@ -18,15 +18,15 @@ enum {
   PROP_0,
 };
 
-struct WestonGtkFavoritesPrivate {
+struct MaynardFavoritesPrivate {
   GSettings *settings;
 };
 
-G_DEFINE_TYPE(WestonGtkFavorites, weston_gtk_favorites, GTK_TYPE_BOX)
+G_DEFINE_TYPE(MaynardFavorites, maynard_favorites, GTK_TYPE_BOX)
 
 static void
 favorite_clicked (GtkButton *button,
-    WestonGtkFavorites *self)
+    MaynardFavorites *self)
 {
   GAppInfo *info = g_object_get_data (G_OBJECT(button), "info");
   GError *error = NULL;
@@ -42,7 +42,7 @@ favorite_clicked (GtkButton *button,
 }
 
 static void
-add_favorite (WestonGtkFavorites *self,
+add_favorite (MaynardFavorites *self,
     const gchar *favorite)
 {
   GDesktopAppInfo *info;
@@ -56,7 +56,7 @@ add_favorite (WestonGtkFavorites *self,
 
   icon = g_app_info_get_icon (G_APP_INFO (info));
 
-  button = weston_gtk_app_icon_new_from_gicon (icon);
+  button = maynard_app_icon_new_from_gicon (icon);
 
   g_object_set_data_full (G_OBJECT (button), "info", info, g_object_unref);
 
@@ -75,7 +75,7 @@ remove_favorite (GtkWidget *favorite,
 static void
 favorites_changed (GSettings *settings,
     const gchar *key,
-    WestonGtkFavorites *self)
+    MaynardFavorites *self)
 {
   gchar **favorites = g_settings_get_strv (settings, key);
   gint i;
@@ -94,21 +94,21 @@ favorites_changed (GSettings *settings,
 }
 
 static void
-weston_gtk_favorites_dispose (GObject *object)
+maynard_favorites_dispose (GObject *object)
 {
-  WestonGtkFavorites *self = WESTON_GTK_FAVORITES (object);
+  MaynardFavorites *self = MAYNARD_FAVORITES (object);
 
   g_clear_object (&self->priv->settings);
 
-  G_OBJECT_CLASS (weston_gtk_favorites_parent_class)->dispose (object);
+  G_OBJECT_CLASS (maynard_favorites_parent_class)->dispose (object);
 }
 
 static void
-weston_gtk_favorites_init (WestonGtkFavorites *self)
+maynard_favorites_init (MaynardFavorites *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-                                            WESTON_GTK_TYPE_FAVORITES,
-                                            WestonGtkFavoritesPrivate);
+                                            MAYNARD_TYPE_FAVORITES,
+                                            MaynardFavoritesPrivate);
 
   self->priv->settings = g_settings_new ("org.raspberrypi.maynard");
   g_signal_connect (self->priv->settings, "changed::favorites",
@@ -119,19 +119,19 @@ weston_gtk_favorites_init (WestonGtkFavorites *self)
 }
 
 static void
-weston_gtk_favorites_class_init (WestonGtkFavoritesClass *klass)
+maynard_favorites_class_init (MaynardFavoritesClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *)klass;
 
-  object_class->dispose = weston_gtk_favorites_dispose;
+  object_class->dispose = maynard_favorites_dispose;
 
-  g_type_class_add_private (object_class, sizeof (WestonGtkFavoritesPrivate));
+  g_type_class_add_private (object_class, sizeof (MaynardFavoritesPrivate));
 }
 
 GtkWidget *
-weston_gtk_favorites_new (void)
+maynard_favorites_new (void)
 {
-  return g_object_new (WESTON_GTK_TYPE_FAVORITES,
+  return g_object_new (MAYNARD_TYPE_FAVORITES,
       "orientation", GTK_ORIENTATION_VERTICAL,
       NULL);
 }

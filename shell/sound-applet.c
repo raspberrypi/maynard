@@ -15,18 +15,18 @@ enum {
   PROP_0,
 };
 
-struct WestonGtkSoundAppletPrivate {
+struct MaynardSoundAppletPrivate {
   GtkWidget *image;
   GtkWidget *scale;
 
   GSettings *settings;
 };
 
-G_DEFINE_TYPE(WestonGtkSoundApplet, weston_gtk_sound_applet, GTK_TYPE_BOX)
+G_DEFINE_TYPE(MaynardSoundApplet, maynard_sound_applet, GTK_TYPE_BOX)
 
 static void
 value_changed_cb (GtkRange *range,
-    WestonGtkSoundApplet *self)
+    MaynardSoundApplet *self)
 {
   GError *error = NULL;
   gdouble value;
@@ -48,21 +48,21 @@ value_changed_cb (GtkRange *range,
 }
 
 static void
-weston_gtk_sound_applet_dispose (GObject *object)
+maynard_sound_applet_dispose (GObject *object)
 {
-  WestonGtkSoundApplet *self = WESTON_GTK_SOUND_APPLET (object);
+  MaynardSoundApplet *self = MAYNARD_SOUND_APPLET (object);
 
   g_clear_object (&self->priv->settings);
 
-  G_OBJECT_CLASS (weston_gtk_sound_applet_parent_class)->dispose (object);
+  G_OBJECT_CLASS (maynard_sound_applet_parent_class)->dispose (object);
 }
 
 static void
-weston_gtk_sound_applet_init (WestonGtkSoundApplet *self)
+maynard_sound_applet_init (MaynardSoundApplet *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-                                            WESTON_GTK_TYPE_SOUND_APPLET,
-                                            WestonGtkSoundAppletPrivate);
+                                            MAYNARD_TYPE_SOUND_APPLET,
+                                            MaynardSoundAppletPrivate);
 
   self->priv->settings = g_settings_new ("org.raspberrypi.maynard");
 
@@ -85,17 +85,17 @@ weston_gtk_sound_applet_init (WestonGtkSoundApplet *self)
 }
 
 static void
-weston_gtk_sound_applet_class_init (WestonGtkSoundAppletClass *klass)
+maynard_sound_applet_class_init (MaynardSoundAppletClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *)klass;
 
-  object_class->dispose = weston_gtk_sound_applet_dispose;
+  object_class->dispose = maynard_sound_applet_dispose;
 
-  g_type_class_add_private (object_class, sizeof (WestonGtkSoundAppletPrivate));
+  g_type_class_add_private (object_class, sizeof (MaynardSoundAppletPrivate));
 }
 
 GtkWidget *
-weston_gtk_sound_applet_new (void)
+maynard_sound_applet_new (void)
 {
-  return g_object_new (WESTON_GTK_TYPE_SOUND_APPLET, NULL);
+  return g_object_new (MAYNARD_TYPE_SOUND_APPLET, NULL);
 }

@@ -23,7 +23,7 @@ enum {
 };
 static guint signals[N_SIGNALS] = { 0 };
 
-struct WestonGtkLauncherPrivate {
+struct MaynardLauncherPrivate {
   /* background widget so we know the output size */
   GtkWidget *background;
   ShellAppSystem *app_system;
@@ -31,17 +31,17 @@ struct WestonGtkLauncherPrivate {
   GtkWidget *grid;
 };
 
-G_DEFINE_TYPE(WestonGtkLauncher, weston_gtk_launcher, GTK_TYPE_WINDOW)
+G_DEFINE_TYPE(MaynardLauncher, maynard_launcher, GTK_TYPE_WINDOW)
 
 /* each grid item is 114x114 */
 #define GRID_ITEM_WIDTH 114
 
 static void
-weston_gtk_launcher_init (WestonGtkLauncher *self)
+maynard_launcher_init (MaynardLauncher *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      WESTON_GTK_LAUNCHER_TYPE,
-      WestonGtkLauncherPrivate);
+      MAYNARD_LAUNCHER_TYPE,
+      MaynardLauncherPrivate);
 }
 
 static gint
@@ -87,7 +87,7 @@ get_child_position_cb (GtkOverlay *overlay,
 static gboolean
 app_launched_idle_cb (gpointer data)
 {
-  WestonGtkLauncher *self = data;
+  MaynardLauncher *self = data;
   GtkAdjustment *adjustment;
 
   /* make the scrolled window go back to the top */
@@ -104,7 +104,7 @@ static void
 clicked_cb (GtkWidget *widget,
     GDesktopAppInfo *info)
 {
-  WestonGtkLauncher *self;
+  MaynardLauncher *self;
 
   g_app_info_launch (G_APP_INFO (info), NULL, NULL, NULL);
 
@@ -135,7 +135,7 @@ app_leave_cb (GtkWidget *widget,
 }
 
 static GtkWidget *
-app_launcher_new_from_desktop_info (WestonGtkLauncher *self,
+app_launcher_new_from_desktop_info (MaynardLauncher *self,
     GDesktopAppInfo *info)
 {
   GIcon *icon;
@@ -212,7 +212,7 @@ app_launcher_new_from_desktop_info (WestonGtkLauncher *self,
 
 static void
 installed_changed_cb (ShellAppSystem *app_system,
-    WestonGtkLauncher *self)
+    MaynardLauncher *self)
 {
   GHashTable *entries = shell_app_system_get_entries (app_system);
   GList *l, *values;
@@ -228,7 +228,7 @@ installed_changed_cb (ShellAppSystem *app_system,
   values = g_hash_table_get_values (entries);
   values = g_list_sort (values, sort_apps);
 
-  weston_gtk_launcher_calculate (self, NULL, NULL, &cols);
+  maynard_launcher_calculate (self, NULL, NULL, &cols);
   cols--; /* because we start from zero here */
 
   left = top = 0;
@@ -254,17 +254,17 @@ installed_changed_cb (ShellAppSystem *app_system,
 static void
 background_size_allocate_cb (GtkWidget *widget,
     GdkRectangle *allocation,
-    WestonGtkLauncher *self)
+    MaynardLauncher *self)
 {
   installed_changed_cb (self->priv->app_system, self);
 }
 
 static void
-weston_gtk_launcher_constructed (GObject *object)
+maynard_launcher_constructed (GObject *object)
 {
-  WestonGtkLauncher *self = WESTON_GTK_LAUNCHER (object);
+  MaynardLauncher *self = MAYNARD_LAUNCHER (object);
 
-  G_OBJECT_CLASS (weston_gtk_launcher_parent_class)->constructed (object);
+  G_OBJECT_CLASS (maynard_launcher_parent_class)->constructed (object);
 
   /* window properties */
   gtk_window_set_title (GTK_WINDOW (self), "gtk shell");
@@ -300,12 +300,12 @@ weston_gtk_launcher_constructed (GObject *object)
 }
 
 static void
-weston_gtk_launcher_get_property (GObject *object,
+maynard_launcher_get_property (GObject *object,
     guint param_id,
     GValue *value,
     GParamSpec *pspec)
 {
-  WestonGtkLauncher *self = WESTON_GTK_LAUNCHER (object);
+  MaynardLauncher *self = MAYNARD_LAUNCHER (object);
 
   switch (param_id)
     {
@@ -319,12 +319,12 @@ weston_gtk_launcher_get_property (GObject *object,
 }
 
 static void
-weston_gtk_launcher_set_property (GObject *object,
+maynard_launcher_set_property (GObject *object,
     guint param_id,
     const GValue *value,
     GParamSpec *pspec)
 {
-  WestonGtkLauncher *self = WESTON_GTK_LAUNCHER (object);
+  MaynardLauncher *self = MAYNARD_LAUNCHER (object);
 
   switch (param_id)
     {
@@ -338,13 +338,13 @@ weston_gtk_launcher_set_property (GObject *object,
 }
 
 static void
-weston_gtk_launcher_class_init (WestonGtkLauncherClass *klass)
+maynard_launcher_class_init (MaynardLauncherClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *)klass;
 
-  object_class->constructed = weston_gtk_launcher_constructed;
-  object_class->get_property = weston_gtk_launcher_get_property;
-  object_class->set_property = weston_gtk_launcher_set_property;
+  object_class->constructed = maynard_launcher_constructed;
+  object_class->get_property = maynard_launcher_get_property;
+  object_class->set_property = maynard_launcher_set_property;
 
   g_object_class_install_property (object_class, PROP_BACKGROUND,
       g_param_spec_object ("background",
@@ -357,19 +357,19 @@ weston_gtk_launcher_class_init (WestonGtkLauncherClass *klass)
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
 
-  g_type_class_add_private (object_class, sizeof (WestonGtkLauncherPrivate));
+  g_type_class_add_private (object_class, sizeof (MaynardLauncherPrivate));
 }
 
 GtkWidget *
-weston_gtk_launcher_new (GtkWidget *background_widget)
+maynard_launcher_new (GtkWidget *background_widget)
 {
-  return g_object_new (WESTON_GTK_LAUNCHER_TYPE,
+  return g_object_new (MAYNARD_LAUNCHER_TYPE,
       "background", background_widget,
       NULL);
 }
 
 void
-weston_gtk_launcher_calculate (WestonGtkLauncher *self,
+maynard_launcher_calculate (MaynardLauncher *self,
     gint *grid_window_width,
     gint *grid_window_height,
     gint *grid_cols)
@@ -382,14 +382,14 @@ weston_gtk_launcher_calculate (WestonGtkLauncher *self,
   gtk_widget_get_size_request (self->priv->background,
       &output_width, &output_height);
 
-  panel_height = output_height * WESTON_GTK_PANEL_HEIGHT_RATIO;
+  panel_height = output_height * MAYNARD_PANEL_HEIGHT_RATIO;
 
   /* the scrollbar is 13 pixels wide */
-  usable_width = output_width - WESTON_GTK_PANEL_WIDTH - 13;
+  usable_width = output_width - MAYNARD_PANEL_WIDTH - 13;
 
   /* we want the height from under the clock which means we need to
    * work out where the clock is, then add the clock height */
-  usable_height = output_height - (((output_height - panel_height) / 2) + WESTON_GTK_CLOCK_HEIGHT);
+  usable_height = output_height - (((output_height - panel_height) / 2) + MAYNARD_CLOCK_HEIGHT);
 
   cols = (guint) (usable_width / GRID_ITEM_WIDTH);
   rows = (guint) (usable_height / GRID_ITEM_WIDTH);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/org/raspberry-pi/weston-gtk-shell">
+  <gresource prefix="/org/raspberry-pi/maynard">
     <file compressed="true">style.css</file>
   </gresource>
 </gresources>

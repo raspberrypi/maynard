@@ -64,7 +64,7 @@ weston_gtk_sound_applet_init (WestonGtkSoundApplet *self)
                                             WESTON_GTK_TYPE_SOUND_APPLET,
                                             WestonGtkSoundAppletPrivate);
 
-  self->priv->settings = g_settings_new ("org.raspberrypi.weston-gtk-shell");
+  self->priv->settings = g_settings_new ("org.raspberrypi.maynard");
 
   gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
 

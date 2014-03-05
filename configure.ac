@@ -1,5 +1,5 @@
 AC_PREREQ([2.64])
-AC_INIT([weston-gtk-shell],
+AC_INIT([maynard],
         [0.2.0+git])
 
 AC_CONFIG_HEADERS([config.h])
@@ -13,7 +13,7 @@ AC_PROG_CC
 
 IT_PROG_INTLTOOL([0.40])
 
-GETTEXT_PACKAGE=weston-gtk-shell
+GETTEXT_PACKAGE=maynard
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
                    [The prefix for our gettext translation domains.])

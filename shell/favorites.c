@@ -110,7 +110,7 @@ weston_gtk_favorites_init (WestonGtkFavorites *self)
                                             WESTON_GTK_TYPE_FAVORITES,
                                             WestonGtkFavoritesPrivate);
 
-  self->priv->settings = g_settings_new ("org.raspberrypi.weston-gtk-shell");
+  self->priv->settings = g_settings_new ("org.raspberrypi.maynard");
   g_signal_connect (self->priv->settings, "changed::favorites",
                     G_CALLBACK (favorites_changed), self);
   favorites_changed (self->priv->settings, "favorites", self);

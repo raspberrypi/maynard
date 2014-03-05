@@ -1,9 +1,9 @@
-libexec_PROGRAMS = weston-gtk-shell
+libexec_PROGRAMS = maynard
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = $(CLIENT_CFLAGS) $(GTK_CFLAGS)
 
-weston_gtk_shell_SOURCES =			\
+maynard_SOURCES =				\
 	gtk-shell.c				\
 	app-icon.c				\
 	app-icon.h				\
@@ -21,28 +21,28 @@ weston_gtk_shell_SOURCES =			\
 	vertical-clock.h			\
 	launcher.c				\
 	launcher.h				\
-	weston-gtk-shell-resources.c		\
-	weston-gtk-shell-resources.h		\
+	maynard-resources.c			\
+	maynard-resources.h			\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	shell-helper-client-protocol.h		\
 	shell-helper-protocol.c
-weston_gtk_shell_LDADD = $(GTK_LIBS)
+maynard_LDADD = $(GTK_LIBS)
 
 BUILT_SOURCES =					\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	shell-helper-client-protocol.h		\
 	shell-helper-protocol.c			\
-	weston-gtk-shell-resources.c		\
-	weston-gtk-shell-resources.h
+	maynard-resources.c			\
+	maynard-resources.h
 
 # gresource for css
-resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/weston-gtk-shell.gresource.xml)
-weston-gtk-shell-resources.c: weston-gtk-shell.gresource.xml $(resource_files)
-	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-source --c-name weston_gtk_shell $<
-weston-gtk-shell-resources.h: weston-gtk-shell.gresource.xml $(resource_files)
-	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-header --c-name weston_gtk_shell $<
+resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/maynard.gresource.xml)
+maynard-resources.c: maynard.gresource.xml $(resource_files)
+	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-source --c-name maynard $<
+maynard-resources.h: maynard.gresource.xml $(resource_files)
+	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-header --c-name maynard $<
 
 EXTRA_DIST = style.css
 

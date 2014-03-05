@@ -1,4 +1,4 @@
-gsettings_SCHEMAS = org.raspberrypi.weston-gtk-shell.gschema.xml
+gsettings_SCHEMAS = org.raspberrypi.maynard.gschema.xml
 
 @INTLTOOL_XML_NOMERGE_RULE@
 
@@ -16,10 +16,10 @@ gschemas.compiled: $(gsettings_SCHEMAS:.xml=.valid)
 all-local: gschemas.compiled
 
 EXTRA_DIST =						\
-	org.raspberrypi.weston-gtk-shell.gschema.xml.in.in
+	org.raspberrypi.maynard.gschema.xml.in.in
 
 CLEANFILES =						\
 	gschemas.compiled				\
-	org.raspberrypi.weston-gtk-shell.gschema.valid	\
+	org.raspberrypi.maynard.gschema.valid	\
 	$(gsettings_SCHEMAS)				\
 	$(gsettings_SCHEMAS).in

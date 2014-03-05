@@ -1,6 +1,6 @@
 <schemalist>
-  <schema id="org.raspberrypi.weston-gtk-shell"
-          path="/org/raspberrypi/weston-gtk-shell/"
+  <schema id="org.raspberrypi.maynard"
+          path="/org/raspberrypi/maynard/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="favorites" type="as">
       <default>[ 'epiphany.desktop', 'libreoffice-writer.desktop', 'nautilus.desktop' ]</default>

@@ -1,12 +1,1 @@
-weston-desktop-shell 0.2.0 (27 Nov 2013)
-========================================
-
-- Sort items alphabetically in the menu
-- Add a clock to the panel
-- Add favorite launchers to the panel
-- Add i18n support
-
-weston-desktop-shell 0.1.0 (20 Nov 2013)
-========================================
-
-- Initial release
+Use 'git log' to list the changes to this repository.

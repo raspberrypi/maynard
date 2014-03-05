@@ -7,7 +7,7 @@
 #include "desktop-shell-client-protocol.h"
 #include "shell-helper-client-protocol.h"
 
-#include "weston-gtk-shell-resources.h"
+#include "maynard-resources.h"
 
 #include "app-icon.h"
 #include "clock.h"
@@ -389,7 +389,7 @@ css_setup(struct desktop *desktop)
 
 	provider = gtk_css_provider_new ();
 
-	file = g_file_new_for_uri ("resource:///org/raspberry-pi/weston-gtk-shell/style.css");
+	file = g_file_new_for_uri ("resource:///org/raspberry-pi/maynard/style.css");
 
 	if (!gtk_css_provider_load_from_file (provider, file, &error)) {
 		g_warning ("Failed to load CSS file: %s", error->message);
@@ -445,7 +445,7 @@ main(int argc, char *argv[])
 
 	gtk_init(&argc, &argv);
 
-	g_resources_register (weston_gtk_shell_get_resource ());
+	g_resources_register (maynard_get_resource ());
 
 	desktop = malloc(sizeof *desktop);
 	desktop->output = NULL;

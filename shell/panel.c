@@ -92,7 +92,7 @@ maynard_panel_constructed (GObject *object)
   /* make it black and slightly alpha */
   gtk_style_context_add_class (
       gtk_widget_get_style_context (GTK_WIDGET (self)),
-      "wgs-panel");
+      "maynard-panel");
 
   /* main vbox */
   main_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
@@ -134,14 +134,14 @@ maynard_panel_constructed (GObject *object)
   image = gtk_image_new_from_icon_name ("network-wireless-signal-excellent-symbolic",
       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_style_context_add_class (gtk_widget_get_style_context (image),
-      "wgs-wifi");
+      "maynard-wifi");
   gtk_box_pack_start (GTK_BOX (buttons_box), image, FALSE, FALSE, 0);
 
   /* sound button */
   image = gtk_image_new_from_icon_name ("audio-volume-high-symbolic",
       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_style_context_add_class (gtk_widget_get_style_context (image),
-      "wgs-audio");
+      "maynard-audio");
   gtk_box_pack_start (GTK_BOX (buttons_box), image, FALSE, FALSE, 0);
 
   /* revealer for the vertical clock */

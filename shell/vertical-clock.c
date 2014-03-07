@@ -89,14 +89,14 @@ maynard_vertical_clock_constructed (GObject *object)
 
   padding = gtk_label_new ("");
   gtk_style_context_add_class (gtk_widget_get_style_context (padding),
-      "wgs-clock");
+      "maynard-clock");
   gtk_widget_set_size_request (padding, width, -1);
   gtk_box_pack_start (GTK_BOX (self), padding, FALSE, FALSE, 0);
 
   /* the actual clock label */
   self->priv->label = gtk_label_new ("");
   gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->label),
-      "wgs-clock");
+      "maynard-clock");
   gtk_label_set_justify (GTK_LABEL (self->priv->label), GTK_JUSTIFY_CENTER);
   gtk_widget_set_size_request (self->priv->label,
       MAYNARD_VERTICAL_CLOCK_WIDTH, -1);

@@ -30,7 +30,7 @@ maynard_app_icon_init (MaynardAppIcon *self)
 {
   gtk_style_context_add_class (
       gtk_widget_get_style_context (GTK_WIDGET (self)),
-      "wgs-apps");
+      "maynard-apps");
 
   gtk_style_context_remove_class (
       gtk_widget_get_style_context (GTK_WIDGET (self)),

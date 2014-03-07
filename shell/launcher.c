@@ -166,7 +166,7 @@ app_launcher_new_from_desktop_info (MaynardLauncher *self,
   /* we need an ebox to catch enter and leave events */
   ebox = gtk_event_box_new ();
   gtk_style_context_add_class (gtk_widget_get_style_context (ebox),
-      "wgs-grid-item");
+      "maynard-grid-item");
 
   /* we use an overlay so we can have the app icon showing but use a
    * GtkRevealer to show a label of the app's name. */
@@ -192,7 +192,7 @@ app_launcher_new_from_desktop_info (MaynardLauncher *self,
   /* app name */
   label = gtk_label_new (g_app_info_get_display_name (G_APP_INFO (info)));
   gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
-  gtk_style_context_add_class (gtk_widget_get_style_context (label), "wgs-grid-label");
+  gtk_style_context_add_class (gtk_widget_get_style_context (label), "maynard-grid-label");
   gtk_container_add (GTK_CONTAINER (revealer), label);
 
   /* icon button to load the app */
@@ -290,7 +290,7 @@ maynard_launcher_constructed (GObject *object)
   /* make it black and slightly alpha */
   gtk_style_context_add_class (
       gtk_widget_get_style_context (GTK_WIDGET (self)),
-      "wgs-grid");
+      "maynard-grid");
 
   /* scroll it */
   self->priv->scrolled_window = gtk_scrolled_window_new (NULL, NULL);

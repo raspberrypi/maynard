@@ -78,7 +78,7 @@ maynard_clock_constructed (GObject *object)
 
   gtk_style_context_add_class (
       gtk_widget_get_style_context (GTK_WIDGET (self)),
-      "wgs-clock");
+      "maynard-clock");
 
   self->priv->label = gtk_label_new ("");
   gtk_label_set_justify (GTK_LABEL (self->priv->label), GTK_JUSTIFY_CENTER);

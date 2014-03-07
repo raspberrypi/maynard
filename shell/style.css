@@ -1,40 +1,40 @@
-.wgs-panel {
+.maynard-panel {
     background-color: alpha(black, 0.7);
 }
 
-.wgs-wifi {
+.maynard-wifi {
     background-color: #6d6d6d;
     color: white;
     padding: 16px;
 }
 
-.wgs-audio {
+.maynard-audio {
     background-color: #b4b4b4;
     color: white;
     padding: 16px;
 }
 
-.wgs-apps {
+.maynard-apps {
     color: #bebebe;
 }
 
-.wgs-apps:hover {
+.maynard-apps:hover {
     -GtkWidget-focus-line-width: 0px;
     background-color: #1c1c1c;
     background-image: none;
     color: white;
 }
 
-.wgs-clock {
+.maynard-clock {
     background-color: #929292;
     color: white;
 }
 
-.wgs-grid {
+.maynard-grid {
     background-color: alpha(white, 0.5);
 }
 
-.wgs-grid-item {
+.maynard-grid-item {
     background-color: alpha(black, 0.7);
     color: white;
     font: Droid Sans 12;
@@ -44,6 +44,6 @@
     border-radius: 1px;
 }
 
-.wgs-grid-label {
+.maynard-grid-label {
     background-color: #929292;
 }

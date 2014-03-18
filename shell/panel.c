@@ -36,7 +36,7 @@ static guint signals[N_SIGNALS] = { 0 };
 struct MaynardPanelPrivate {
   gboolean hidden;
 
-  GtkWidget *revealer_buttons; /* for the wifi and sound buttons */
+  GtkWidget *revealer_buttons; /* for the top buttons */
   GtkWidget *revealer_clock; /* for the vertical clock */
 };
 
@@ -98,7 +98,7 @@ maynard_panel_constructed (GObject *object)
   main_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add (GTK_CONTAINER (self), main_box);
 
-  /* for the wifi/sound buttons and vertical clock we have a few more
+  /* for the top buttons and vertical clock we have a few more
    * boxes. the hbox has two cells. in each cell there is a
    * GtkRevealer for hiding and showing the content. only one revealer
    * is ever visibile at one point and transitions happen at the same
@@ -117,7 +117,7 @@ maynard_panel_constructed (GObject *object)
   menu_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_add (GTK_CONTAINER (ebox), menu_box);
 
-  /* revealer for the wifi & sound buttons */
+  /* revealer for the top buttons */
   self->priv->revealer_buttons = gtk_revealer_new ();
   gtk_revealer_set_transition_type (GTK_REVEALER (self->priv->revealer_buttons),
       GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT);
@@ -126,15 +126,15 @@ maynard_panel_constructed (GObject *object)
   gtk_box_pack_start (GTK_BOX (menu_box),
       self->priv->revealer_buttons, FALSE, FALSE, 0);
 
-  /* the box for the wifi & sound buttons */
+  /* the box for the top buttons */
   buttons_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add (GTK_CONTAINER (self->priv->revealer_buttons), buttons_box);
 
-  /* wifi button */
-  image = gtk_image_new_from_icon_name ("network-wireless-signal-excellent-symbolic",
+  /* system button */
+  image = gtk_image_new_from_icon_name ("emblem-system-symbolic",
       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_style_context_add_class (gtk_widget_get_style_context (image),
-      "maynard-wifi");
+      "maynard-system");
   gtk_box_pack_start (GTK_BOX (buttons_box), image, FALSE, FALSE, 0);
 
   /* sound button */

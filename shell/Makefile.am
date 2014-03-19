@@ -44,7 +44,9 @@ maynard-resources.c: maynard.gresource.xml $(resource_files)
 maynard-resources.h: maynard.gresource.xml $(resource_files)
 	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-header --c-name maynard $<
 
-EXTRA_DIST = style.css
+EXTRA_DIST =			\
+	style.css		\
+	maynard.gresource.xml
 
 # shell-helper weston module
 moduledir = $(libdir)/weston

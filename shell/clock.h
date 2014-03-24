@@ -56,4 +56,7 @@ GType maynard_clock_get_type (void) G_GNUC_CONST;
 
 GtkWidget * maynard_clock_new (void);
 
+void maynard_clock_show_volume (MaynardClock *self,
+    gboolean value);
+
 #endif /* __MAYNARD_CLOCK_H__ */

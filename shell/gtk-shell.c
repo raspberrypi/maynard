@@ -67,6 +67,7 @@ struct desktop {
 	guint hide_panel_idle_id;
 
 	gboolean grid_visible;
+	gboolean volume_visible;
 };
 
 static gboolean panel_window_enter_cb (GtkWidget *widget,
@@ -213,6 +214,16 @@ launcher_grid_create (struct desktop *desktop)
 	desktop->launcher_grid = launcher_grid;
 }
 
+static void
+volume_changed_cb (MaynardClock *clock,
+		   gdouble value,
+		   const gchar *icon_name,
+		   struct desktop *desktop)
+{
+	maynard_panel_set_volume_icon_name (
+		MAYNARD_PANEL (desktop->panel->window), icon_name);
+}
+
 static GtkWidget *
 clock_create (struct desktop *desktop)
 {
@@ -224,12 +235,27 @@ clock_create (struct desktop *desktop)
 
 	clock->window = maynard_clock_new();
 
+	g_signal_connect (clock->window, "volume-changed",
+			  G_CALLBACK (volume_changed_cb), desktop);
+
 	gdk_window = gtk_widget_get_window(clock->window);
 	clock->surface = gdk_wayland_window_get_wl_surface(gdk_window);
 
 	gtk_widget_show_all (clock->window);
 
 	desktop->clock = clock;
+}
+
+static void
+volume_toggled_cb (GtkWidget *widget,
+		   struct desktop *desktop)
+{
+	desktop->volume_visible = !desktop->volume_visible;
+
+	maynard_clock_show_volume (MAYNARD_CLOCK (desktop->clock->window),
+				   desktop->volume_visible);
+	maynard_panel_show_volume_previous (MAYNARD_PANEL (desktop->panel->window),
+					    desktop->volume_visible);
 }
 
 static gboolean
@@ -278,7 +304,11 @@ leave_panel_idle_cb (gpointer data)
 				   MAYNARD_VERTICAL_CLOCK_WIDTH - MAYNARD_PANEL_WIDTH - width, 0);
 
 	maynard_panel_set_expand(MAYNARD_PANEL(desktop->panel->window),
-				    FALSE);
+				 FALSE);
+
+	maynard_clock_show_volume (MAYNARD_CLOCK (desktop->clock->window), FALSE);
+	maynard_panel_show_volume_previous (MAYNARD_PANEL (desktop->panel->window), FALSE);
+	desktop->volume_visible = FALSE;
 
 	return FALSE;
 }
@@ -325,6 +355,8 @@ panel_create(struct desktop *desktop)
 
 	g_signal_connect(panel->window, "app-menu-toggled",
 			 G_CALLBACK(launcher_grid_toggle), desktop);
+	g_signal_connect(panel->window, "volume-toggled",
+			 G_CALLBACK(volume_toggled_cb), desktop);
 
 	desktop->initial_panel_timeout_id =
 		g_timeout_add_seconds(2, panel_hide_timeout_cb, desktop);
@@ -495,6 +527,7 @@ main(int argc, char *argv[])
 		wl_display_roundtrip (desktop->display);
 
 	desktop->grid_visible = FALSE;
+	desktop->volume_visible = FALSE;
 
 	css_setup(desktop);
 	panel_create(desktop);

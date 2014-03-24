@@ -56,4 +56,9 @@ GtkWidget * maynard_panel_new (void);
 
 void maynard_panel_set_expand (MaynardPanel *self, gboolean expand);
 
+void maynard_panel_show_volume_previous (MaynardPanel *self, gboolean status);
+
+void maynard_panel_set_volume_icon_name (MaynardPanel *self,
+    const gchar *icon_name);
+
 #endif /* __MAYNARD_PANEL_H__ */

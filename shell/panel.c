@@ -29,6 +29,7 @@
 
 enum {
   APP_MENU_TOGGLED,
+  VOLUME_TOGGLED,
   N_SIGNALS
 };
 static guint signals[N_SIGNALS] = { 0 };
@@ -38,6 +39,10 @@ struct MaynardPanelPrivate {
 
   GtkWidget *revealer_buttons; /* for the top buttons */
   GtkWidget *revealer_clock; /* for the vertical clock */
+
+  gboolean volume_showing;
+  GtkWidget *volume_button;
+  gchar *volume_icon_name;
 };
 
 G_DEFINE_TYPE(MaynardPanel, maynard_panel, GTK_TYPE_WINDOW)
@@ -48,6 +53,8 @@ maynard_panel_init (MaynardPanel *self)
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
       MAYNARD_PANEL_TYPE,
       MaynardPanelPrivate);
+
+  self->priv->volume_icon_name = g_strdup ("audio-volume-high-symbolic");
 }
 
 static gboolean
@@ -71,6 +78,13 @@ app_menu_button_clicked_cb (GtkButton *button,
     MaynardPanel *self)
 {
   g_signal_emit (self, signals[APP_MENU_TOGGLED], 0);
+}
+
+static void
+volume_button_clicked_cb (GtkButton *button,
+    MaynardPanel *self)
+{
+  g_signal_emit (self, signals[VOLUME_TOGGLED], 0);
 }
 
 static void
@@ -138,11 +152,21 @@ maynard_panel_constructed (GObject *object)
   gtk_box_pack_start (GTK_BOX (buttons_box), image, FALSE, FALSE, 0);
 
   /* sound button */
-  image = gtk_image_new_from_icon_name ("audio-volume-high-symbolic",
+  ebox = gtk_event_box_new ();
+  gtk_box_pack_end (GTK_BOX (buttons_box), ebox, FALSE, FALSE, 0);
+  button = gtk_button_new_from_icon_name (self->priv->volume_icon_name,
       GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_style_context_add_class (gtk_widget_get_style_context (image),
+  gtk_style_context_add_class (gtk_widget_get_style_context (button),
       "maynard-audio");
-  gtk_box_pack_start (GTK_BOX (buttons_box), image, FALSE, FALSE, 0);
+  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
+      "button");
+  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
+      "image-button");
+  g_signal_connect (button, "clicked",
+      G_CALLBACK (volume_button_clicked_cb), self);
+  gtk_container_add (GTK_CONTAINER (ebox), button);
+  widget_connect_enter_signal (self, ebox);
+  self->priv->volume_button = button;
 
   /* revealer for the vertical clock */
   self->priv->revealer_clock = gtk_revealer_new ();
@@ -176,6 +200,18 @@ maynard_panel_constructed (GObject *object)
 
   /* done */
   self->priv->hidden = FALSE;
+  self->priv->volume_showing = TRUE;
+}
+
+static void
+maynard_panel_dispose (GObject *object)
+{
+  MaynardPanel *self = MAYNARD_PANEL (object);
+
+  g_free (self->priv->volume_icon_name);
+  self->priv->volume_icon_name = NULL;
+
+  G_OBJECT_CLASS (maynard_panel_parent_class)->dispose (object);
 }
 
 static void
@@ -185,8 +221,13 @@ maynard_panel_class_init (MaynardPanelClass *klass)
   GParamSpec *param_spec;
 
   object_class->constructed = maynard_panel_constructed;
+  object_class->dispose = maynard_panel_dispose;
 
   signals[APP_MENU_TOGGLED] = g_signal_new ("app-menu-toggled",
+      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+      NULL, G_TYPE_NONE, 0);
+
+  signals[VOLUME_TOGGLED] = g_signal_new ("volume-toggled",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
 
@@ -206,4 +247,41 @@ maynard_panel_set_expand (MaynardPanel *self,
 {
   gtk_revealer_set_reveal_child (GTK_REVEALER (self->priv->revealer_buttons), expand);
   gtk_revealer_set_reveal_child (GTK_REVEALER (self->priv->revealer_clock), !expand);
+}
+
+static void
+set_volume_icon (MaynardPanel *self,
+    const gchar *icon_name)
+{
+  GtkWidget *image;
+
+  image = gtk_image_new_from_icon_name (icon_name,
+      GTK_ICON_SIZE_LARGE_TOOLBAR);
+  gtk_button_set_image (GTK_BUTTON (self->priv->volume_button),
+      image);
+}
+
+void
+maynard_panel_show_volume_previous (MaynardPanel *self,
+    gboolean status)
+{
+  const gchar *icon_name = self->priv->volume_icon_name;
+
+  if (status)
+    icon_name = "go-previous-symbolic";
+
+  self->priv->volume_showing = !status;
+
+  set_volume_icon (self, icon_name);
+}
+
+void
+maynard_panel_set_volume_icon_name (MaynardPanel *self,
+    const gchar *icon_name)
+{
+  g_free (self->priv->volume_icon_name);
+  self->priv->volume_icon_name = g_strdup (icon_name);
+
+  if (self->priv->volume_showing)
+    set_volume_icon (self, icon_name);
 }

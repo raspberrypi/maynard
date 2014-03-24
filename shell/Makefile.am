@@ -13,8 +13,6 @@ maynard_SOURCES =				\
 	favorites.h				\
 	shell-app-system.c			\
 	shell-app-system.h			\
-	sound-applet.c				\
-	sound-applet.h				\
 	panel.c					\
 	panel.h					\
 	vertical-clock.c			\

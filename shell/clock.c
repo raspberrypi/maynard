@@ -99,6 +99,16 @@ volume_changed_cb (GtkRange *range,
   g_signal_emit (self, signals[VOLUME_CHANGED], 0, value, icon_name);
 }
 
+static gboolean
+volume_idle_cb (gpointer data)
+{
+  GtkRange *range = GTK_RANGE (data);
+
+  gtk_range_set_value (range, 50);
+
+  return G_SOURCE_REMOVE;
+}
+
 static GtkWidget *
 create_volume_box (MaynardClock *self)
 {
@@ -120,6 +130,11 @@ create_volume_box (MaynardClock *self)
 
   g_signal_connect (self->priv->volume_scale, "value-changed",
       G_CALLBACK (volume_changed_cb), self);
+
+  /* set the initial value in an idle so ::volume-changed is emitted
+   * when other widgets are connected to the signal and can react
+   * accordingly. */
+  g_idle_add (volume_idle_cb, self->priv->volume_scale);
 
   return box;
 }

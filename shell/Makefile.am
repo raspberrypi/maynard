@@ -4,7 +4,7 @@ AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = $(CLIENT_CFLAGS) $(GTK_CFLAGS)
 
 maynard_SOURCES =				\
-	gtk-shell.c				\
+	maynard.c				\
 	app-icon.c				\
 	app-icon.h				\
 	clock.c					\

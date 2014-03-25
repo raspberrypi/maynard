@@ -99,7 +99,7 @@ maynard_panel_constructed (GObject *object)
   G_OBJECT_CLASS (maynard_panel_parent_class)->constructed (object);
 
   /* window properties */
-  gtk_window_set_title (GTK_WINDOW (self), "gtk shell");
+  gtk_window_set_title (GTK_WINDOW (self), "maynard");
   gtk_window_set_decorated (GTK_WINDOW (self), FALSE);
   gtk_widget_realize(GTK_WIDGET (self));
 

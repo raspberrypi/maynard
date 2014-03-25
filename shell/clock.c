@@ -155,7 +155,7 @@ maynard_clock_constructed (GObject *object)
   g_signal_connect (self->priv->wall_clock, "notify::clock",
       G_CALLBACK (wall_clock_notify_cb), self);
 
-  gtk_window_set_title (GTK_WINDOW (self), "gtk shell");
+  gtk_window_set_title (GTK_WINDOW (self), "maynard");
   gtk_window_set_decorated (GTK_WINDOW (self), FALSE);
   gtk_widget_realize (GTK_WIDGET (self));
 

@@ -420,7 +420,7 @@ background_create(struct desktop *desktop)
 	g_signal_connect (background->window, "draw",
 			  G_CALLBACK (draw_cb), desktop);
 
-	gtk_window_set_title(GTK_WINDOW(background->window), "gtk shell");
+	gtk_window_set_title(GTK_WINDOW(background->window), "maynard");
 	gtk_window_set_decorated(GTK_WINDOW(background->window), FALSE);
 	gtk_widget_realize(background->window);
 

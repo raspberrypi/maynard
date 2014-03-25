@@ -98,7 +98,7 @@ connect_enter_leave_signals (gpointer data)
 	g_signal_connect (desktop->launcher_grid->window, "leave-notify-event",
 			  G_CALLBACK (panel_window_leave_cb), desktop);
 
-	return FALSE;
+	return G_SOURCE_REMOVE;
 }
 
 static void
@@ -310,7 +310,7 @@ leave_panel_idle_cb (gpointer data)
 	maynard_panel_show_volume_previous (MAYNARD_PANEL (desktop->panel->window), FALSE);
 	desktop->volume_visible = FALSE;
 
-	return FALSE;
+	return G_SOURCE_REMOVE;
 }
 
 static gboolean
@@ -340,6 +340,8 @@ panel_hide_timeout_cb (gpointer data)
 	struct desktop *desktop = data;
 
 	panel_window_leave_cb (NULL, NULL, desktop);
+
+	return G_SOURCE_REMOVE;
 }
 
 static void

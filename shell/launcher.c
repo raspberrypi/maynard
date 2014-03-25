@@ -113,7 +113,7 @@ app_launched_idle_cb (gpointer data)
 
   gtk_adjustment_set_value (adjustment, 0.0);
 
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void

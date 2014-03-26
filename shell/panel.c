@@ -62,7 +62,9 @@ widget_enter_notify_event_cb (GtkWidget *widget,
     GdkEventCrossing *event,
     MaynardPanel *self)
 {
-  g_signal_emit_by_name (self, "enter-notify-event", event);
+  gboolean handled;
+  g_signal_emit_by_name (self, "enter-notify-event", event, &handled);
+  return handled;
 }
 
 static void

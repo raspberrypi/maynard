@@ -55,6 +55,55 @@ shell_helper_move_surface(struct wl_client *client,
 	weston_view_update_transform(view);
 }
 
+static void
+configure_surface(struct weston_surface *es, int32_t sx, int32_t sy)
+{
+	struct weston_view *existing_view = es->configure_private;
+	struct weston_view *new_view;
+
+	new_view = container_of(es->views.next, struct weston_view, surface_link);
+
+	if (wl_list_empty(&new_view->layer_link)) {
+		/* be sure to append to the list, not insert */
+		wl_list_insert(&existing_view->layer_link, &new_view->layer_link);
+		weston_compositor_schedule_repaint(es->compositor);
+	}
+}
+
+static void
+shell_helper_add_surface_to_layer(struct wl_client *client,
+				  struct wl_resource *resource,
+				  struct wl_resource *new_surface_resource,
+				  struct wl_resource *existing_surface_resource)
+{
+	struct shell_helper *helper = wl_resource_get_user_data(resource);
+	struct weston_surface *new_surface =
+		wl_resource_get_user_data(new_surface_resource);
+	struct weston_surface *existing_surface =
+		wl_resource_get_user_data(existing_surface_resource);
+	struct weston_view *new_view, *existing_view, *next;
+	struct wl_layer *layer;
+
+	if (new_surface->configure) {
+		wl_resource_post_error(new_surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface role already assigned");
+		return;
+	}
+
+	existing_view = container_of(existing_surface->views.next,
+				     struct weston_view,
+				     surface_link);
+
+	wl_list_for_each_safe(new_view, next, &new_surface->views, surface_link)
+		weston_view_destroy(new_view);
+	new_view = weston_view_create(new_surface);
+
+	new_surface->configure = configure_surface;
+	new_surface->configure_private = existing_view;
+	new_surface->output = existing_view->output;
+}
+
 enum SlideState {
 	SLIDE_STATE_NONE,
 	SLIDE_STATE_SLIDING_OUT,
@@ -226,6 +275,7 @@ shell_helper_slide_surface_back(struct wl_client *client,
 
 static const struct shell_helper_interface helper_implementation = {
 	shell_helper_move_surface,
+	shell_helper_add_surface_to_layer,
 	shell_helper_slide_surface,
 	shell_helper_slide_surface_back
 };

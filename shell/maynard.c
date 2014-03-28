@@ -206,6 +206,11 @@ launcher_grid_create (struct desktop *desktop)
 	gdk_window = gtk_widget_get_window(launcher_grid->window);
 	launcher_grid->surface = gdk_wayland_window_get_wl_surface(gdk_window);
 
+	gdk_wayland_window_set_use_custom_surface(gdk_window);
+	shell_helper_add_surface_to_layer(desktop->helper,
+					  launcher_grid->surface,
+					  desktop->panel->surface);
+
 	g_signal_connect(launcher_grid->window, "app-launched",
 			 G_CALLBACK(launcher_grid_toggle), desktop);
 
@@ -240,6 +245,10 @@ clock_create (struct desktop *desktop)
 
 	gdk_window = gtk_widget_get_window(clock->window);
 	clock->surface = gdk_wayland_window_get_wl_surface(gdk_window);
+
+	gdk_wayland_window_set_use_custom_surface(gdk_window);
+	shell_helper_add_surface_to_layer(desktop->helper, clock->surface,
+					  desktop->panel->surface);
 
 	gtk_widget_show_all (clock->window);
 
@@ -532,9 +541,12 @@ main(int argc, char *argv[])
 	desktop->volume_visible = FALSE;
 
 	css_setup(desktop);
+	background_create(desktop);
+
+	/* panel needs to be first so the clock and launcher grid can
+	 * be added to its layer */
 	panel_create(desktop);
 	clock_create(desktop);
-	background_create(desktop);
 	launcher_grid_create (desktop);
 
 	gtk_main();

@@ -142,8 +142,7 @@ desktop_shell_configure(void *data,
 
 	shell_helper_move_surface(desktop->helper,
 				  desktop->launcher_grid->surface,
-				  /* TODO: massive hack so window is always onscreen */
-				  - grid_width + 1,
+				  - grid_width,
 				  ((height - window_height) / 2) + MAYNARD_CLOCK_HEIGHT);
 
 	desktop_shell_desktop_ready(desktop->shell);
@@ -187,8 +186,7 @@ launcher_grid_toggle (GtkWidget *widget, struct desktop *desktop)
 
 		shell_helper_slide_surface(desktop->helper,
 					   desktop->launcher_grid->surface,
-					   /* TODO: massive hack so window is always onscreen */
-					   width + MAYNARD_PANEL_WIDTH - 1, 0);
+					   width + MAYNARD_PANEL_WIDTH, 0);
 	}
 
 	desktop->grid_visible = !desktop->grid_visible;

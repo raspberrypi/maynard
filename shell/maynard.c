@@ -41,7 +41,7 @@
 
 extern char **environ; /* defined by libc */
 
-gchar *filename = "/usr/share/themes/Adwaita/backgrounds/morning.jpg";
+#define DEFAULT_BACKGROUND "/usr/share/themes/Adwaita/backgrounds/morning.jpg""
 
 struct element {
 	GtkWidget *window;
@@ -412,11 +412,14 @@ background_create(struct desktop *desktop)
 {
 	GdkWindow *gdk_window;
 	struct element *background;
+	const gchar *filename;
 
 	background = malloc(sizeof *background);
 	memset(background, 0, sizeof *background);
 
-	/* TODO: get the "right" directory */
+	filename = g_getenv("BACKGROUND");
+	if (filename == NULL)
+		filename = DEFAULT_BACKGROUND;
 	background->pixbuf = gdk_pixbuf_new_from_file (filename, NULL);
 	if (!background->pixbuf) {
 		g_message ("Could not load background.");

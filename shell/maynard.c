@@ -21,6 +21,7 @@
  * IN THE SOFTWARE.
  */
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -407,12 +408,41 @@ destroy_cb (GObject *object, gpointer data)
 	gtk_main_quit ();
 }
 
+static GdkPixbuf *
+scale_background (GdkPixbuf *original_pixbuf)
+{
+	/* Scale original_pixbuf so it mostly fits on the screen.
+	 * If the aspect ratio is different than a bit on the right or on the
+	 * bottom could be cropped out. */
+	GdkScreen *screen = gdk_screen_get_default ();
+	gint screen_width, screen_height;
+	gint original_width, original_height;
+	gint final_width, final_height;
+	gdouble ratio_horizontal, ratio_vertical, ratio;
+
+	screen_width = gdk_screen_get_width (screen);
+	screen_height = gdk_screen_get_height (screen);
+	original_width = gdk_pixbuf_get_width (original_pixbuf);
+	original_height = gdk_pixbuf_get_height (original_pixbuf);
+
+	ratio_horizontal = (double) screen_width / original_width;
+	ratio_vertical = (double) screen_height / original_height;
+	ratio = MAX (ratio_horizontal, ratio_vertical);
+
+	final_width = ceil (ratio * original_width);
+	final_height = ceil (ratio * original_height);
+
+	return gdk_pixbuf_scale_simple (original_pixbuf,
+			final_width, final_height, GDK_INTERP_BILINEAR);
+}
+
 static void
 background_create(struct desktop *desktop)
 {
 	GdkWindow *gdk_window;
 	struct element *background;
 	const gchar *filename;
+	GdkPixbuf *unscaled_background;
 
 	background = malloc(sizeof *background);
 	memset(background, 0, sizeof *background);
@@ -420,12 +450,15 @@ background_create(struct desktop *desktop)
 	filename = g_getenv("BACKGROUND");
 	if (filename == NULL)
 		filename = DEFAULT_BACKGROUND;
-	background->pixbuf = gdk_pixbuf_new_from_file (filename, NULL);
-	if (!background->pixbuf) {
+	unscaled_background = gdk_pixbuf_new_from_file (filename, NULL);
+	if (!unscaled_background) {
 		g_message ("Could not load background. "
 		    "Do you have kdewallpapers installed?");
 		exit (EXIT_FAILURE);
 	}
+
+	background->pixbuf = scale_background (unscaled_background);
+	g_object_unref (unscaled_background);
 
 	background->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 

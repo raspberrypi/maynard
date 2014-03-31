@@ -25,7 +25,7 @@ maynard_SOURCES =				\
 	desktop-shell-protocol.c		\
 	shell-helper-client-protocol.h		\
 	shell-helper-protocol.c
-maynard_LDADD = $(GTK_LIBS)
+maynard_LDADD = $(GTK_LIBS) -lm
 
 BUILT_SOURCES =					\
 	desktop-shell-client-protocol.h		\

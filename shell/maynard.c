@@ -41,7 +41,7 @@
 
 extern char **environ; /* defined by libc */
 
-#define DEFAULT_BACKGROUND "/usr/share/themes/Adwaita/backgrounds/morning.jpg""
+#define DEFAULT_BACKGROUND "/usr/share/wallpapers/Hanami/contents/images/3872x2592.jpg"
 
 struct element {
 	GtkWidget *window;
@@ -422,7 +422,8 @@ background_create(struct desktop *desktop)
 		filename = DEFAULT_BACKGROUND;
 	background->pixbuf = gdk_pixbuf_new_from_file (filename, NULL);
 	if (!background->pixbuf) {
-		g_message ("Could not load background.");
+		g_message ("Could not load background. "
+		    "Do you have kdewallpapers installed?");
 		exit (EXIT_FAILURE);
 	}
 

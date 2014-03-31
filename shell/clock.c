@@ -81,11 +81,11 @@ volume_changed_cb (GtkRange *range,
   /* update the icon */
   if (value > 75)
     icon_name = "audio-volume-high-symbolic";
-  else if (value > 50)
+  else if (value > 30)
     icon_name = "audio-volume-medium-symbolic";
-  else if (value > 25)
+  else if (value > 0)
     icon_name = "audio-volume-low-symbolic";
-  else if (value == 0)
+  else
     icon_name = "audio-volume-muted-symbolic";
 
   box = gtk_widget_get_parent (self->priv->volume_image);

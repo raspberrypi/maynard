@@ -407,23 +407,16 @@ maynard_launcher_calculate (MaynardLauncher *self,
    * work out where the clock is, then add the clock height */
   usable_height = output_height - (((output_height - panel_height) / 2) + MAYNARD_CLOCK_HEIGHT);
 
-  cols = (guint) (usable_width / GRID_ITEM_WIDTH);
-  rows = (guint) (usable_height / GRID_ITEM_WIDTH);
+  /* defaults */
+  cols = 7;
+  rows = 3;
 
-  /* we don't want any blank space at the bottom of the grid so make
-   * sure it's full and resize if necessary */
-  /* TODO: this might not actually be a great idea. */
-  if (cols > 0)
-    {
-      guint num_apps;
+  /* if the display is smaller than cols or rows can allow, cut it down. */
+  while (cols > 1 && (cols * GRID_ITEM_WIDTH) > usable_width)
+    cols--;
 
-      num_apps = g_hash_table_size (
-          shell_app_system_get_entries (self->priv->app_system));
-
-      /* worst case cols = 1 */
-      while ((num_apps % cols) > 0)
-        cols--;
-    }
+  while (rows > 1 && (rows * GRID_ITEM_WIDTH) > usable_height)
+    rows--;
 
   if (grid_window_width)
     *grid_window_width = (cols * GRID_ITEM_WIDTH) + 13; /* add back the 13 for the scrollbar */

@@ -31,11 +31,11 @@
 }
 
 .maynard-grid {
-    background-color: alpha(white, 0.5);
+    background-color: alpha(black, 0.6);
 }
 
 .maynard-grid-item {
-    background-color: alpha(black, 0.7);
+    background-color: alpha(black, 0.6);
     color: white;
     font: Droid Sans 12;
     border-style: solid;

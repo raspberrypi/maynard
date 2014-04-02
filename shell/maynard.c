@@ -389,6 +389,17 @@ panel_hide_timeout_cb (gpointer data)
 }
 
 static void
+favorite_launched_cb (MaynardPanel *panel,
+		      struct desktop *desktop)
+{
+	if (desktop->grid_visible) {
+		launcher_grid_toggle (desktop->launcher_grid->window, desktop);
+	}
+
+	panel_window_leave_cb (NULL, NULL, desktop);
+}
+
+static void
 panel_create(struct desktop *desktop)
 {
 	struct element *panel;
@@ -405,6 +416,8 @@ panel_create(struct desktop *desktop)
 			 G_CALLBACK(system_toggled_cb), desktop);
 	g_signal_connect(panel->window, "volume-toggled",
 			 G_CALLBACK(volume_toggled_cb), desktop);
+	g_signal_connect(panel->window, "favorite-launched",
+			 G_CALLBACK(favorite_launched_cb), desktop);
 
 	desktop->initial_panel_timeout_id =
 		g_timeout_add_seconds(2, panel_hide_timeout_cb, desktop);

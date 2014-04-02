@@ -31,6 +31,7 @@ enum {
   APP_MENU_TOGGLED,
   SYSTEM_TOGGLED,
   VOLUME_TOGGLED,
+  FAVORITE_LAUNCHED,
   N_SIGNALS
 };
 static guint signals[N_SIGNALS] = { 0 };
@@ -100,6 +101,13 @@ volume_button_clicked_cb (GtkButton *button,
 }
 
 static void
+favorite_launched_cb (MaynardFavorites *favorites,
+    MaynardPanel *self)
+{
+  g_signal_emit (self, signals[FAVORITE_LAUNCHED], 0);
+}
+
+static void
 maynard_panel_constructed (GObject *object)
 {
   MaynardPanel *self = MAYNARD_PANEL (object);
@@ -107,6 +115,7 @@ maynard_panel_constructed (GObject *object)
   GtkWidget *ebox;
   GtkWidget *image;
   GtkWidget *button;
+  GtkWidget *favorites;
 
   G_OBJECT_CLASS (maynard_panel_parent_class)->constructed (object);
 
@@ -208,8 +217,12 @@ maynard_panel_constructed (GObject *object)
   /* favorites */
   ebox = gtk_event_box_new ();
   gtk_box_pack_start (GTK_BOX (main_box), ebox, FALSE, FALSE, 0);
-  gtk_container_add (GTK_CONTAINER (ebox), maynard_favorites_new ());
+  favorites = maynard_favorites_new ();
+  gtk_container_add (GTK_CONTAINER (ebox), favorites);
   widget_connect_enter_signal (self, ebox);
+
+  g_signal_connect (favorites, "app-launched",
+      G_CALLBACK (favorite_launched_cb), self);
 
   /* bottom app menu button */
   ebox = gtk_event_box_new ();
@@ -254,6 +267,10 @@ maynard_panel_class_init (MaynardPanelClass *klass)
       NULL, G_TYPE_NONE, 0);
 
   signals[VOLUME_TOGGLED] = g_signal_new ("volume-toggled",
+      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+      NULL, G_TYPE_NONE, 0);
+
+  signals[FAVORITE_LAUNCHED] = g_signal_new ("favorite-launched",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
 

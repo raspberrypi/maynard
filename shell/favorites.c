@@ -30,8 +30,10 @@
 #include "app-icon.h"
 
 enum {
-  PROP_0,
+  APP_LAUNCHED,
+  N_SIGNALS
 };
+static guint signals[N_SIGNALS] = { 0 };
 
 struct MaynardFavoritesPrivate {
   GSettings *settings;
@@ -54,6 +56,8 @@ favorite_clicked (GtkButton *button,
           error->message);
       g_clear_error (&error);
     }
+
+  g_signal_emit (self, signals[APP_LAUNCHED], 0);
 }
 
 static void
@@ -139,6 +143,10 @@ maynard_favorites_class_init (MaynardFavoritesClass *klass)
   GObjectClass *object_class = (GObjectClass *)klass;
 
   object_class->dispose = maynard_favorites_dispose;
+
+  signals[APP_LAUNCHED] = g_signal_new ("app-launched",
+      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+      NULL, G_TYPE_NONE, 0);
 
   g_type_class_add_private (object_class, sizeof (MaynardFavoritesPrivate));
 }

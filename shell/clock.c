@@ -21,10 +21,11 @@
 
 #include "config.h"
 
-#include "clock.h"
-
+#include <alsa/asoundlib.h>
 #define GNOME_DESKTOP_USE_UNSTABLE_API
 #include <libgnome-desktop/gnome-wall-clock.h>
+
+#include "clock.h"
 
 enum {
   VOLUME_CHANGED,
@@ -42,6 +43,10 @@ struct MaynardClockPrivate {
   GtkWidget *volume_image;
 
   GnomeWallClock *wall_clock;
+
+  snd_mixer_t *mixer_handle;
+  snd_mixer_elem_t *mixer;
+  glong min_volume, max_volume;
 };
 
 G_DEFINE_TYPE(MaynardClock, maynard_clock, GTK_TYPE_WINDOW)
@@ -54,29 +59,47 @@ maynard_clock_init (MaynardClock *self)
       MaynardClockPrivate);
 }
 
+static gdouble
+alsa_volume_to_percentage (MaynardClock *self,
+    glong value)
+{
+  glong range;
+
+  /* min volume isn't always zero unfortunately */
+  range = self->priv->max_volume - self->priv->min_volume;
+
+  value -= self->priv->min_volume;
+
+  return (value / (gdouble) range) * 100;
+}
+
+static glong
+percentage_to_alsa_volume (MaynardClock *self,
+    gdouble value)
+{
+  glong range;
+
+  /* min volume isn't always zero unfortunately */
+  range = self->priv->max_volume - self->priv->min_volume;
+
+  return (range * value / 100) + self->priv->min_volume;
+}
+
 static void
 volume_changed_cb (GtkRange *range,
     MaynardClock *self)
 {
-  GError *error = NULL;
   gdouble value;
-  gchar *cmd;
   const gchar *icon_name;
   GtkWidget *box;
 
   value = gtk_range_get_value (range);
 
-  cmd = g_strdup_printf ("amixer set PCM %d%%", (int) value);
-
-  g_spawn_command_line_async (cmd, &error);
-
-  if (error)
+  if (self->priv->mixer != NULL)
     {
-      g_print ("failed to set volume: %s\n", error->message);
-      g_clear_error (&error);
+      snd_mixer_selem_set_playback_volume_all (self->priv->mixer,
+          percentage_to_alsa_volume (self, value));
     }
-
-  g_free (cmd);
 
   /* update the icon */
   if (value > 75)
@@ -102,9 +125,17 @@ volume_changed_cb (GtkRange *range,
 static gboolean
 volume_idle_cb (gpointer data)
 {
-  GtkRange *range = GTK_RANGE (data);
+  MaynardClock *self = MAYNARD_CLOCK (data);
+  glong volume;
 
-  gtk_range_set_value (range, 50);
+  if (self->priv->mixer != NULL)
+    {
+      snd_mixer_selem_get_playback_volume (self->priv->mixer,
+          SND_MIXER_SCHN_MONO, &volume);
+
+      gtk_range_set_value (GTK_RANGE (self->priv->volume_scale),
+          alsa_volume_to_percentage (self, volume));
+    }
 
   return G_SOURCE_REMOVE;
 }
@@ -134,7 +165,7 @@ create_volume_box (MaynardClock *self)
   /* set the initial value in an idle so ::volume-changed is emitted
    * when other widgets are connected to the signal and can react
    * accordingly. */
-  g_idle_add (volume_idle_cb, self->priv->volume_scale);
+  g_idle_add (volume_idle_cb, self);
 
   return box;
 }
@@ -156,6 +187,55 @@ wall_clock_notify_cb (GnomeWallClock *wall_clock,
 
   g_free (str);
   g_date_time_unref (datetime);
+}
+
+static void
+setup_mixer (MaynardClock *self)
+{
+  snd_mixer_selem_id_t *sid;
+  gint ret;
+
+  /* this is all pretty specific to the rpi */
+
+  if ((ret = snd_mixer_open (&self->priv->mixer_handle, 0)) < 0)
+    goto error;
+
+  if ((ret = snd_mixer_attach (self->priv->mixer_handle, "default")) < 0)
+    goto error;
+
+  if ((ret = snd_mixer_selem_register (self->priv->mixer_handle, NULL, NULL)) < 0)
+    goto error;
+
+  if ((ret = snd_mixer_load (self->priv->mixer_handle)) < 0)
+    goto error;
+
+  snd_mixer_selem_id_alloca (&sid);
+  snd_mixer_selem_id_set_index (sid, 0);
+  snd_mixer_selem_id_set_name (sid, "PCM");
+  self->priv->mixer = snd_mixer_find_selem (self->priv->mixer_handle, sid);
+
+  /* fallback to mixer "Master" */
+  if (self->priv->mixer == NULL)
+    {
+      snd_mixer_selem_id_set_name (sid, "Master");
+      self->priv->mixer = snd_mixer_find_selem (self->priv->mixer_handle, sid);
+      if (self->priv->mixer == NULL)
+        goto error;
+    }
+
+  if ((ret = snd_mixer_selem_get_playback_volume_range (self->priv->mixer,
+              &self->priv->min_volume, &self->priv->max_volume)) < 0)
+    goto error;
+
+  return;
+
+error:
+  g_debug ("failed to setup mixer: %s", snd_strerror (ret));
+
+  if (self->priv->mixer_handle != NULL)
+    snd_mixer_close (self->priv->mixer_handle);
+  self->priv->mixer_handle = NULL;
+  self->priv->mixer = NULL;
 }
 
 static void
@@ -211,6 +291,8 @@ maynard_clock_constructed (GObject *object)
   gtk_container_add (GTK_CONTAINER (self->priv->revealer_clock),
       self->priv->label);
 
+  setup_mixer (self);
+
   wall_clock_notify_cb (self->priv->wall_clock, NULL, self);
 }
 
@@ -220,6 +302,11 @@ maynard_clock_dispose (GObject *object)
   MaynardClock *self = MAYNARD_CLOCK (object);
 
   g_clear_object (&self->priv->wall_clock);
+
+  if (self->priv->mixer_handle != NULL)
+    snd_mixer_close (self->priv->mixer_handle);
+  self->priv->mixer_handle = NULL;
+  self->priv->mixer = NULL;
 
   G_OBJECT_CLASS (maynard_clock_parent_class)->dispose (object);
 }

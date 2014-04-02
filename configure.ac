@@ -31,6 +31,7 @@ PKG_CHECK_MODULES([GTK], [
 	gtk+-wayland-3.0
 	libgnome-menu-3.0
 	gnome-desktop-3.0
+	alsa
 ])
 
 GLIB_GSETTINGS

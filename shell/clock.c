@@ -35,6 +35,7 @@ static guint signals[N_SIGNALS] = { 0 };
 
 struct MaynardClockPrivate {
   GtkWidget *revealer_clock;
+  GtkWidget *revealer_system;
   GtkWidget *revealer_volume;
 
   GtkWidget *label;
@@ -141,6 +142,12 @@ volume_idle_cb (gpointer data)
 }
 
 static GtkWidget *
+create_system_box (MaynardClock *self)
+{
+  return gtk_label_new ("Not implemented yet!");
+}
+
+static GtkWidget *
 create_volume_box (MaynardClock *self)
 {
   GtkWidget *box;
@@ -242,7 +249,7 @@ static void
 maynard_clock_constructed (GObject *object)
 {
   MaynardClock *self = MAYNARD_CLOCK (object);
-  GtkWidget *box, *volume_box;
+  GtkWidget *box, *system_box, *volume_box;
 
   G_OBJECT_CLASS (maynard_clock_parent_class)->constructed (object);
 
@@ -276,6 +283,20 @@ maynard_clock_constructed (GObject *object)
   gtk_container_add (GTK_CONTAINER (self->priv->revealer_volume),
       volume_box);
 
+  /* system */
+  self->priv->revealer_system = gtk_revealer_new ();
+  gtk_revealer_set_transition_type (
+      GTK_REVEALER (self->priv->revealer_system),
+      GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT);
+  gtk_revealer_set_reveal_child (
+      GTK_REVEALER (self->priv->revealer_system), FALSE);
+  gtk_box_pack_start (GTK_BOX (box), self->priv->revealer_system,
+      TRUE, TRUE, 0);
+
+  system_box = create_system_box (self);
+  gtk_container_add (GTK_CONTAINER (self->priv->revealer_system),
+      system_box);
+
   /* clock */
   self->priv->revealer_clock = gtk_revealer_new ();
   gtk_revealer_set_transition_type (
@@ -290,6 +311,10 @@ maynard_clock_constructed (GObject *object)
   gtk_label_set_justify (GTK_LABEL (self->priv->label), GTK_JUSTIFY_CENTER);
   gtk_container_add (GTK_CONTAINER (self->priv->revealer_clock),
       self->priv->label);
+
+  /* TODO: work out how to fix the padding properly. this is added to
+   * fix the broken alignment where the clock appears to the right. */
+  gtk_box_pack_start (GTK_BOX (box), gtk_revealer_new (), TRUE, TRUE, 0);
 
   setup_mixer (self);
 
@@ -334,11 +359,18 @@ maynard_clock_new (void)
 }
 
 void
-maynard_clock_show_volume (MaynardClock *self,
-    gboolean value)
+maynard_clock_show_section (MaynardClock *self,
+    MaynardClockSection section)
 {
   gtk_revealer_set_reveal_child (
-      GTK_REVEALER (self->priv->revealer_volume), value);
+      GTK_REVEALER (self->priv->revealer_clock),
+      section == MAYNARD_CLOCK_SECTION_CLOCK);
+
   gtk_revealer_set_reveal_child (
-      GTK_REVEALER (self->priv->revealer_clock), !value);
+      GTK_REVEALER (self->priv->revealer_system),
+      section == MAYNARD_CLOCK_SECTION_SYSTEM);
+
+  gtk_revealer_set_reveal_child (
+      GTK_REVEALER (self->priv->revealer_volume),
+      section == MAYNARD_CLOCK_SECTION_VOLUME);
 }

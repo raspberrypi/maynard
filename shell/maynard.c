@@ -68,6 +68,7 @@ struct desktop {
 	guint hide_panel_idle_id;
 
 	gboolean grid_visible;
+	gboolean system_visible;
 	gboolean volume_visible;
 };
 
@@ -255,15 +256,47 @@ clock_create (struct desktop *desktop)
 }
 
 static void
+button_toggled_cb (struct desktop *desktop,
+		   gboolean *visible,
+		   gboolean *not_visible)
+{
+	*visible = !*visible;
+	*not_visible = FALSE;
+
+	if (desktop->system_visible) {
+		maynard_clock_show_section (MAYNARD_CLOCK (desktop->clock->window),
+					    MAYNARD_CLOCK_SECTION_SYSTEM);
+		maynard_panel_show_previous (MAYNARD_PANEL (desktop->panel->window),
+					     MAYNARD_PANEL_BUTTON_SYSTEM);
+	} else if (desktop->volume_visible) {
+		maynard_clock_show_section (MAYNARD_CLOCK (desktop->clock->window),
+					    MAYNARD_CLOCK_SECTION_VOLUME);
+		maynard_panel_show_previous (MAYNARD_PANEL (desktop->panel->window),
+					     MAYNARD_PANEL_BUTTON_VOLUME);
+	} else {
+		maynard_clock_show_section (MAYNARD_CLOCK (desktop->clock->window),
+					    MAYNARD_CLOCK_SECTION_CLOCK);
+		maynard_panel_show_previous (MAYNARD_PANEL (desktop->panel->window),
+					     MAYNARD_PANEL_BUTTON_NONE);
+	}
+}
+
+static void
+system_toggled_cb (GtkWidget *widget,
+		   struct desktop *desktop)
+{
+	button_toggled_cb (desktop,
+			   &desktop->system_visible,
+			   &desktop->volume_visible);
+}
+
+static void
 volume_toggled_cb (GtkWidget *widget,
 		   struct desktop *desktop)
 {
-	desktop->volume_visible = !desktop->volume_visible;
-
-	maynard_clock_show_volume (MAYNARD_CLOCK (desktop->clock->window),
-				   desktop->volume_visible);
-	maynard_panel_show_volume_previous (MAYNARD_PANEL (desktop->panel->window),
-					    desktop->volume_visible);
+	button_toggled_cb (desktop,
+			   &desktop->volume_visible,
+			   &desktop->system_visible);
 }
 
 static gboolean
@@ -314,8 +347,11 @@ leave_panel_idle_cb (gpointer data)
 	maynard_panel_set_expand(MAYNARD_PANEL(desktop->panel->window),
 				 FALSE);
 
-	maynard_clock_show_volume (MAYNARD_CLOCK (desktop->clock->window), FALSE);
-	maynard_panel_show_volume_previous (MAYNARD_PANEL (desktop->panel->window), FALSE);
+	maynard_clock_show_section (MAYNARD_CLOCK (desktop->clock->window),
+				    MAYNARD_CLOCK_SECTION_CLOCK);
+	maynard_panel_show_previous (MAYNARD_PANEL (desktop->panel->window),
+				     MAYNARD_PANEL_BUTTON_NONE);
+	desktop->system_visible = FALSE;
 	desktop->volume_visible = FALSE;
 
 	return G_SOURCE_REMOVE;
@@ -365,6 +401,8 @@ panel_create(struct desktop *desktop)
 
 	g_signal_connect(panel->window, "app-menu-toggled",
 			 G_CALLBACK(launcher_grid_toggle), desktop);
+	g_signal_connect(panel->window, "system-toggled",
+			 G_CALLBACK(system_toggled_cb), desktop);
 	g_signal_connect(panel->window, "volume-toggled",
 			 G_CALLBACK(volume_toggled_cb), desktop);
 
@@ -573,6 +611,7 @@ main(int argc, char *argv[])
 		wl_display_roundtrip (desktop->display);
 
 	desktop->grid_visible = FALSE;
+	desktop->system_visible = FALSE;
 	desktop->volume_visible = FALSE;
 
 	css_setup(desktop);

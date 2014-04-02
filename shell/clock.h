@@ -52,11 +52,16 @@ struct MaynardClockClass
 #define MAYNARD_CLOCK_WIDTH (MAYNARD_PANEL_WIDTH * 2.6)
 #define MAYNARD_CLOCK_HEIGHT (MAYNARD_PANEL_WIDTH * 2)
 
+typedef enum {
+  MAYNARD_CLOCK_SECTION_CLOCK,
+  MAYNARD_CLOCK_SECTION_SYSTEM,
+  MAYNARD_CLOCK_SECTION_VOLUME
+} MaynardClockSection;
+
 GType maynard_clock_get_type (void) G_GNUC_CONST;
 
 GtkWidget * maynard_clock_new (void);
 
-void maynard_clock_show_volume (MaynardClock *self,
-    gboolean value);
+void maynard_clock_show_section (MaynardClock *self, MaynardClockSection section);
 
 #endif /* __MAYNARD_CLOCK_H__ */

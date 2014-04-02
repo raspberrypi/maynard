@@ -29,6 +29,7 @@
 
 enum {
   APP_MENU_TOGGLED,
+  SYSTEM_TOGGLED,
   VOLUME_TOGGLED,
   N_SIGNALS
 };
@@ -39,6 +40,8 @@ struct MaynardPanelPrivate {
 
   GtkWidget *revealer_buttons; /* for the top buttons */
   GtkWidget *revealer_clock; /* for the vertical clock */
+
+  GtkWidget *system_button;
 
   gboolean volume_showing;
   GtkWidget *volume_button;
@@ -80,6 +83,13 @@ app_menu_button_clicked_cb (GtkButton *button,
     MaynardPanel *self)
 {
   g_signal_emit (self, signals[APP_MENU_TOGGLED], 0);
+}
+
+static void
+system_button_clicked_cb (GtkButton *button,
+    MaynardPanel *self)
+{
+  g_signal_emit (self, signals[SYSTEM_TOGGLED], 0);
 }
 
 static void
@@ -147,15 +157,25 @@ maynard_panel_constructed (GObject *object)
   gtk_container_add (GTK_CONTAINER (self->priv->revealer_buttons), buttons_box);
 
   /* system button */
-  image = gtk_image_new_from_icon_name ("emblem-system-symbolic",
+  ebox = gtk_event_box_new ();
+  gtk_box_pack_start (GTK_BOX (buttons_box), ebox, FALSE, FALSE, 0);
+  button = gtk_button_new_from_icon_name ("emblem-system-symbolic",
       GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_style_context_add_class (gtk_widget_get_style_context (image),
+  gtk_style_context_add_class (gtk_widget_get_style_context (button),
       "maynard-system");
-  gtk_box_pack_start (GTK_BOX (buttons_box), image, FALSE, FALSE, 0);
+  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
+      "button");
+  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
+      "image-button");
+  g_signal_connect (button, "clicked",
+      G_CALLBACK (system_button_clicked_cb), self);
+  gtk_container_add (GTK_CONTAINER (ebox), button);
+  widget_connect_enter_signal (self, ebox);
+  self->priv->system_button = button;
 
   /* sound button */
   ebox = gtk_event_box_new ();
-  gtk_box_pack_end (GTK_BOX (buttons_box), ebox, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (buttons_box), ebox, FALSE, FALSE, 0);
   button = gtk_button_new_from_icon_name (self->priv->volume_icon_name,
       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_style_context_add_class (gtk_widget_get_style_context (button),
@@ -229,6 +249,10 @@ maynard_panel_class_init (MaynardPanelClass *klass)
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
 
+  signals[SYSTEM_TOGGLED] = g_signal_new ("system-toggled",
+      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+      NULL, G_TYPE_NONE, 0);
+
   signals[VOLUME_TOGGLED] = g_signal_new ("volume-toggled",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
@@ -252,29 +276,39 @@ maynard_panel_set_expand (MaynardPanel *self,
 }
 
 static void
-set_volume_icon (MaynardPanel *self,
+set_icon (GtkWidget *button,
     const gchar *icon_name)
 {
   GtkWidget *image;
 
   image = gtk_image_new_from_icon_name (icon_name,
       GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_button_set_image (GTK_BUTTON (self->priv->volume_button),
+  gtk_button_set_image (GTK_BUTTON (button),
       image);
 }
 
 void
-maynard_panel_show_volume_previous (MaynardPanel *self,
-    gboolean status)
+maynard_panel_show_previous (MaynardPanel *self,
+    MaynardPanelButton button)
 {
-  const gchar *icon_name = self->priv->volume_icon_name;
-
-  if (status)
-    icon_name = "go-previous-symbolic";
-
-  self->priv->volume_showing = !status;
-
-  set_volume_icon (self, icon_name);
+  switch (button)
+    {
+    case MAYNARD_PANEL_BUTTON_SYSTEM:
+      set_icon (self->priv->system_button, "go-previous-symbolic");
+      set_icon (self->priv->volume_button, self->priv->volume_icon_name);
+      self->priv->volume_showing = FALSE;
+      break;
+    case MAYNARD_PANEL_BUTTON_VOLUME:
+      set_icon (self->priv->system_button, "emblem-system-symbolic");
+      set_icon (self->priv->volume_button, "go-previous-symbolic");
+      self->priv->volume_showing = TRUE;
+      break;
+    case MAYNARD_PANEL_BUTTON_NONE:
+    default:
+      set_icon (self->priv->system_button, "emblem-system-symbolic");
+      set_icon (self->priv->volume_button, self->priv->volume_icon_name);
+      self->priv->volume_showing = FALSE;
+    }
 }
 
 void
@@ -285,5 +319,5 @@ maynard_panel_set_volume_icon_name (MaynardPanel *self,
   self->priv->volume_icon_name = g_strdup (icon_name);
 
   if (self->priv->volume_showing)
-    set_volume_icon (self, icon_name);
+    set_icon (self->priv->volume_button, icon_name);
 }

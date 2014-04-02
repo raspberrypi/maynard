@@ -50,13 +50,19 @@ struct MaynardPanelClass
 #define MAYNARD_PANEL_WIDTH 56
 #define MAYNARD_PANEL_HEIGHT_RATIO 0.73
 
+typedef enum {
+  MAYNARD_PANEL_BUTTON_NONE,
+  MAYNARD_PANEL_BUTTON_SYSTEM,
+  MAYNARD_PANEL_BUTTON_VOLUME
+} MaynardPanelButton;
+
 GType maynard_panel_get_type (void) G_GNUC_CONST;
 
 GtkWidget * maynard_panel_new (void);
 
 void maynard_panel_set_expand (MaynardPanel *self, gboolean expand);
 
-void maynard_panel_show_volume_previous (MaynardPanel *self, gboolean status);
+void maynard_panel_show_previous (MaynardPanel *self, MaynardPanelButton button);
 
 void maynard_panel_set_volume_icon_name (MaynardPanel *self,
     const gchar *icon_name);

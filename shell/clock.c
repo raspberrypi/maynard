@@ -144,7 +144,7 @@ volume_idle_cb (gpointer data)
 static GtkWidget *
 create_system_box (MaynardClock *self)
 {
-  return gtk_label_new ("Not implemented yet!");
+  return gtk_label_new ("Not implemented");
 }
 
 static GtkWidget *

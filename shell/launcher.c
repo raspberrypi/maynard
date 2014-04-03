@@ -51,6 +51,7 @@ G_DEFINE_TYPE(MaynardLauncher, maynard_launcher, GTK_TYPE_WINDOW)
 
 /* each grid item is 114x114 */
 #define GRID_ITEM_WIDTH 114
+#define GRID_ITEM_HEIGHT 114
 
 static void
 maynard_launcher_init (MaynardLauncher *self)
@@ -390,39 +391,39 @@ maynard_launcher_calculate (MaynardLauncher *self,
     gint *grid_window_height,
     gint *grid_cols)
 {
-  gint output_width, output_height;
-  gint panel_height;
+  gint output_width, output_height, panel_height;
   gint usable_width, usable_height;
   guint cols, rows;
+  guint num_apps;
+  guint scrollbar_width = 13;
 
   gtk_widget_get_size_request (self->priv->background,
       &output_width, &output_height);
-
   panel_height = output_height * MAYNARD_PANEL_HEIGHT_RATIO;
 
-  /* the scrollbar is 13 pixels wide */
-  usable_width = output_width - MAYNARD_PANEL_WIDTH - 13;
+  usable_width = output_width - MAYNARD_PANEL_WIDTH - scrollbar_width;
+  /* don't go further down than the panel */
+  usable_height = panel_height - MAYNARD_CLOCK_HEIGHT;
 
-  /* we want the height from under the clock which means we need to
-   * work out where the clock is, then add the clock height */
-  usable_height = output_height - (((output_height - panel_height) / 2) + MAYNARD_CLOCK_HEIGHT);
+  /* try and fill half the screen, otherwise round down */
+  cols = (int) ((usable_width / 2.0) / GRID_ITEM_WIDTH);
+  /* try to fit as many rows as possible in the panel height we have */
+  rows = (int) (usable_height / GRID_ITEM_HEIGHT);
 
-  /* defaults */
-  cols = 7;
-  rows = 3;
+  /* we don't need to include the scrollbar if we already have enough
+   * space for all the apps. */
+  num_apps = g_hash_table_size (
+      shell_app_system_get_entries (self->priv->app_system));
+  if ((cols * rows) >= num_apps)
+    scrollbar_width = 0;
 
-  /* if the display is smaller than cols or rows can allow, cut it down. */
-  while (cols > 1 && (cols * GRID_ITEM_WIDTH) > usable_width)
-    cols--;
-
-  while (rows > 1 && (rows * GRID_ITEM_WIDTH) > usable_height)
-    rows--;
+  /* done! */
 
   if (grid_window_width)
-    *grid_window_width = (cols * GRID_ITEM_WIDTH) + 13; /* add back the 13 for the scrollbar */
+    *grid_window_width = (cols * GRID_ITEM_WIDTH) + scrollbar_width;
 
   if (grid_window_height)
-    *grid_window_height = (rows * GRID_ITEM_WIDTH);
+    *grid_window_height = (rows * GRID_ITEM_HEIGHT);
 
   if (grid_cols)
     *grid_cols = cols;

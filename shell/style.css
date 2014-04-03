@@ -4,14 +4,24 @@
 
 .maynard-system {
     background-color: #6d6d6d;
-    color: white;
     padding: 13px;
+    color: #fcfcfc;
+}
+
+.maynard-system:hover {
+    background-color: alpha(#6d6d6d, 0.8);
+    color: white;
 }
 
 .maynard-audio {
     background-color: #b4b4b4;
-    color: white;
+    color: #fcfcfc;
     padding: 13px;
+}
+
+.maynard-audio:hover {
+    background-color: alpha(#b4b4b4, 0.8);
+    color: white;
 }
 
 .maynard-apps {
@@ -19,9 +29,7 @@
 }
 
 .maynard-apps:hover {
-    -GtkWidget-focus-line-width: 0px;
-    background-color: #1c1c1c;
-    background-image: none;
+    background-color: alpha(black, 0.2);
     color: white;
 }
 

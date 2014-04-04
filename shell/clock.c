@@ -155,7 +155,7 @@ create_volume_box (MaynardClock *self)
   box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
   self->priv->volume_image = gtk_image_new_from_icon_name (
-      "audio-volume-high-symbolic",
+      "audio-volume-muted-symbolic",
       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_box_pack_start (GTK_BOX (box), self->priv->volume_image,
       FALSE, FALSE, 0);

@@ -335,6 +335,6 @@ maynard_panel_set_volume_icon_name (MaynardPanel *self,
   g_free (self->priv->volume_icon_name);
   self->priv->volume_icon_name = g_strdup (icon_name);
 
-  if (self->priv->volume_showing)
+  if (!self->priv->volume_showing)
     set_icon (self->priv->volume_button, icon_name);
 }

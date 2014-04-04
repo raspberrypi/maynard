@@ -235,7 +235,7 @@ maynard_panel_constructed (GObject *object)
 
   /* done */
   self->priv->hidden = FALSE;
-  self->priv->volume_showing = TRUE;
+  self->priv->volume_showing = FALSE;
 }
 
 static void

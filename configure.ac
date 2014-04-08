@@ -38,6 +38,7 @@ GLIB_GSETTINGS
 
 WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
 
+AC_CONFIG_FILES([maynard], [chmod +x maynard])
 AC_CONFIG_FILES([Makefile
 		 data/Makefile
 		 shell/Makefile

@@ -36,6 +36,7 @@ _gen
 /missing
 /stamp-h1
 /maynard-*.tar.xz
+/maynard
 shell/desktop-shell-client-protocol.h
 shell/desktop-shell-protocol.c
 shell/shell-helper-client-protocol.h

@@ -1,0 +1,30 @@
+#! /bin/sh
+
+PREFIX=@prefix@
+LIBEXECDIR=$PREFIX/libexec
+ABS_BUILDDIR=@abs_builddir@
+
+md5() {
+    cat "$1" 2> /dev/null | md5sum
+}
+
+check_install() {
+    local_maynard="$ABS_BUILDDIR/shell/maynard"
+    installed_maynard="$LIBEXECDIR/maynard"
+    if [ ! -e "$local_maynard" -o \
+         ! -e "$installed_maynard" -o \
+         "`md5 \"$local_maynard\"`" != "`md5 \"$installed_maynard\"`" ]; then
+        echo "It looks like you forgot to run 'make install'." >&1
+        exit 1
+    fi
+}
+
+xdpyinfo > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    # We are running under X, so let's assume this is a development
+    # installation.
+    check_install
+    XDG_DATA_DIRS=$XDG_DATA_DIRS:$PREFIX/share/ $PREFIX/bin/weston
+else
+    weston-launch
+fi

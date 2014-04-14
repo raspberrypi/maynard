@@ -14,7 +14,7 @@ check_install() {
     if [ ! -e "$local_maynard" -o \
          ! -e "$installed_maynard" -o \
          "`md5 \"$local_maynard\"`" != "`md5 \"$installed_maynard\"`" ]; then
-        echo "It looks like you forgot to run 'make install'." >&1
+        echo "It looks like you forgot to run 'make install'." >&2
         exit 1
     fi
 }

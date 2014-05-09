@@ -31,6 +31,8 @@ struct shell_helper {
 
 	struct wl_listener destroy_listener;
 
+	struct weston_layer *panel_layer;
+
 	struct wl_list slide_list;
 };
 
@@ -102,6 +104,48 @@ shell_helper_add_surface_to_layer(struct wl_client *client,
 	new_surface->configure = configure_surface;
 	new_surface->configure_private = existing_view;
 	new_surface->output = existing_view->output;
+}
+
+static void
+configure_panel(struct weston_surface *es, int32_t sx, int32_t sy)
+{
+	struct shell_helper *helper = es->configure_private;
+	struct weston_view *view;
+
+	view = container_of(es->views.next, struct weston_view, surface_link);
+
+	if (wl_list_empty(&view->layer_link)) {
+		wl_list_insert(&helper->panel_layer->view_list, &view->layer_link);
+		weston_compositor_schedule_repaint(es->compositor);
+	}
+}
+
+static void
+shell_helper_set_panel(struct wl_client *client,
+		       struct wl_resource *resource,
+		       struct wl_resource *surface_resource)
+{
+	struct shell_helper *helper = wl_resource_get_user_data(resource);
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+	struct weston_view *view = container_of(surface->views.next,
+						struct weston_view,
+						surface_link);
+
+	/* we need to save the panel's layer so we can use it later on, but
+	 * it hasn't yet been defined because the original surface configure
+	 * function hasn't yet been calld. if we call it here we will have
+	 * access to the layer. */
+	surface->configure(surface, 0, 0);
+
+	helper->panel_layer = container_of(&view->layer_link,
+					   struct weston_layer,
+					   view_list);
+
+	/* set new configure functions that only ensure the surface is in the
+	 * correct layer. */
+	surface->configure = configure_panel;
+	surface->configure_private = helper;
 }
 
 enum SlideState {
@@ -276,6 +320,7 @@ shell_helper_slide_surface_back(struct wl_client *client,
 static const struct shell_helper_interface helper_implementation = {
 	shell_helper_move_surface,
 	shell_helper_add_surface_to_layer,
+	shell_helper_set_panel,
 	shell_helper_slide_surface,
 	shell_helper_slide_surface_back
 };
@@ -312,6 +357,7 @@ module_init(struct weston_compositor *ec,
 		return -1;
 
 	helper->compositor = ec;
+	helper->panel_layer = NULL;
 
 	wl_list_init(&helper->slide_list);
 

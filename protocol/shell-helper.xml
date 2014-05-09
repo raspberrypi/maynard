@@ -12,6 +12,10 @@
       <arg name="existing_surface" type="object" interface="wl_surface"/>
     </request>
 
+    <request name="set_panel">
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
     <request name="slide_surface">
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>

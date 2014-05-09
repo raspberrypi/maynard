@@ -434,6 +434,7 @@ panel_create (struct desktop *desktop)
   desktop_shell_set_panel (desktop->shell, desktop->output, panel->surface);
   desktop_shell_set_panel_position (desktop->shell,
       DESKTOP_SHELL_PANEL_POSITION_LEFT);
+  shell_helper_set_panel (desktop->helper, panel->surface);
 
   gtk_widget_show_all (panel->window);
 

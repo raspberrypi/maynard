@@ -1,4 +1,8 @@
 Emilio Pozuelo Monfort <emilio.pozuelo@collabora.co.uk>
 Jonny Lamb <jonny.lamb@collabora.co.uk>
 Marco Barisione <marco.barisione@collabora.co.uk>
-Tiago Vignatti <tiago.vignatti@intel.com>
+
+Tiago Vignatti <tiago.vignatti@intel.com> is the author of
+  weston-gtk-shell, the original base for maynard, but did not take
+  part in maynard's development. Please don't bother him about maynard
+  specific queries!

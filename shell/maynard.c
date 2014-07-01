@@ -638,8 +638,13 @@ main (int argc,
 
   /* Wait until we have been notified about the compositor,
    * shell, and shell helper objects */
-  while (!desktop->output || !desktop->shell || !desktop->helper)
+  if (!desktop->output || !desktop->shell || !desktop->helper)
     wl_display_roundtrip (desktop->display);
+  if (!desktop->output || !desktop->shell || !desktop->helper)
+    {
+      fprintf (stderr, "could not find output, shell or helper modules\n");
+      return -1;
+    }
 
   desktop->grid_visible = FALSE;
   desktop->system_visible = FALSE;

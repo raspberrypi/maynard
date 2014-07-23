@@ -57,6 +57,9 @@ struct desktop {
   struct wl_output *output;
   struct shell_helper *helper;
 
+  struct wl_seat *seat;
+  struct wl_pointer *pointer;
+
   GdkDisplay *gdk_display;
 
   struct element *background;
@@ -70,6 +73,7 @@ struct desktop {
   gboolean grid_visible;
   gboolean system_visible;
   gboolean volume_visible;
+  gboolean pointer_out_of_panel;
 };
 
 static gboolean panel_window_enter_cb (GtkWidget *widget,
@@ -320,6 +324,12 @@ panel_window_enter_cb (GtkWidget *widget,
       return;
     }
 
+  if (desktop->pointer_out_of_panel)
+    {
+      desktop->pointer_out_of_panel = FALSE;
+      return;
+    }
+
   shell_helper_slide_surface_back (desktop->helper,
       desktop->panel->surface);
   shell_helper_slide_surface_back (desktop->helper,
@@ -356,6 +366,7 @@ leave_panel_idle_cb (gpointer data)
       MAYNARD_PANEL_BUTTON_NONE);
   desktop->system_visible = FALSE;
   desktop->volume_visible = FALSE;
+  desktop->pointer_out_of_panel = FALSE;
 
   return G_SOURCE_REMOVE;
 }
@@ -375,7 +386,10 @@ panel_window_leave_cb (GtkWidget *widget,
     return;
 
   if (desktop->grid_visible)
-    return;
+    {
+      desktop->pointer_out_of_panel = TRUE;
+      return;
+    }
 
   desktop->hide_panel_idle_id = g_idle_add (leave_panel_idle_cb, desktop);
 
@@ -566,6 +580,105 @@ css_setup (struct desktop *desktop)
   g_object_unref (file);
 }
 
+
+static void
+pointer_handle_enter (void *data,
+    struct wl_pointer *pointer,
+    uint32_t serial,
+    struct wl_surface *surface,
+    wl_fixed_t sx_w,
+    wl_fixed_t sy_w)
+{
+}
+
+static void
+pointer_handle_leave (void *data,
+    struct wl_pointer *pointer,
+    uint32_t serial,
+    struct wl_surface *surface)
+{
+}
+
+static void
+pointer_handle_motion (void *data,
+    struct wl_pointer *pointer,
+    uint32_t time,
+    wl_fixed_t sx_w,
+    wl_fixed_t sy_w)
+{
+}
+
+static void
+pointer_handle_button (void *data,
+    struct wl_pointer *pointer,
+    uint32_t serial,
+    uint32_t time,
+    uint32_t button,
+    uint32_t state_w)
+{
+  struct desktop *desktop = data;
+
+  if (state_w != WL_POINTER_BUTTON_STATE_RELEASED)
+    return;
+
+  if (!desktop->pointer_out_of_panel)
+    return;
+
+  if (desktop->grid_visible)
+    launcher_grid_toggle (desktop->launcher_grid->window, desktop);
+
+  panel_window_leave_cb (NULL, NULL, desktop);
+}
+
+static void
+pointer_handle_axis (void *data,
+    struct wl_pointer *pointer,
+    uint32_t time,
+    uint32_t axis,
+    wl_fixed_t value)
+{
+}
+
+static const struct wl_pointer_listener pointer_listener = {
+  pointer_handle_enter,
+  pointer_handle_leave,
+  pointer_handle_motion,
+  pointer_handle_button,
+  pointer_handle_axis,
+};
+
+static void
+seat_handle_capabilities (void *data,
+    struct wl_seat *seat,
+    enum wl_seat_capability caps)
+{
+  struct desktop *desktop = data;
+
+  if ((caps & WL_SEAT_CAPABILITY_POINTER) && !desktop->pointer) {
+    desktop->pointer = wl_seat_get_pointer(seat);
+    wl_pointer_set_user_data (desktop->pointer, desktop);
+    wl_pointer_add_listener(desktop->pointer, &pointer_listener,
+          desktop);
+  } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && desktop->pointer) {
+    wl_pointer_destroy(desktop->pointer);
+    desktop->pointer = NULL;
+  }
+
+  /* TODO: keyboard and touch */
+}
+
+static void
+seat_handle_name (void *data,
+    struct wl_seat *seat,
+    const char *name)
+{
+}
+
+static const struct wl_seat_listener seat_listener = {
+  seat_handle_capabilities,
+  seat_handle_name
+};
+
 static void
 registry_handle_global (void *data,
     struct wl_registry *registry,
@@ -586,6 +699,12 @@ registry_handle_global (void *data,
       /* TODO: create multiple outputs */
       d->output = wl_registry_bind (registry, name,
           &wl_output_interface, 1);
+    }
+  else if (!strcmp (interface, "wl_seat"))
+    {
+      d->seat = wl_registry_bind (registry, name,
+          &wl_seat_interface, 1);
+      wl_seat_add_listener (d->seat, &seat_listener, d);
     }
   else if (!strcmp (interface, "shell_helper"))
     {
@@ -622,6 +741,8 @@ main (int argc,
   desktop->output = NULL;
   desktop->shell = NULL;
   desktop->helper = NULL;
+  desktop->seat = NULL;
+  desktop->pointer = NULL;
 
   desktop->gdk_display = gdk_display_get_default ();
   desktop->display =
@@ -649,6 +770,7 @@ main (int argc,
   desktop->grid_visible = FALSE;
   desktop->system_visible = FALSE;
   desktop->volume_visible = FALSE;
+  desktop->pointer_out_of_panel = FALSE;
 
   css_setup (desktop);
   background_create (desktop);

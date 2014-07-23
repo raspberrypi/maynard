@@ -134,11 +134,11 @@ shell_helper_set_panel(struct wl_client *client,
 
 	/* we need to save the panel's layer so we can use it later on, but
 	 * it hasn't yet been defined because the original surface configure
-	 * function hasn't yet been calld. if we call it here we will have
+	 * function hasn't yet been called. if we call it here we will have
 	 * access to the layer. */
 	surface->configure(surface, 0, 0);
 
-	helper->panel_layer = container_of(&view->layer_link,
+	helper->panel_layer = container_of(view->layer_link.next,
 					   struct weston_layer,
 					   view_list);
 

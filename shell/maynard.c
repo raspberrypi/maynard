@@ -165,7 +165,7 @@ desktop_shell_grab_cursor (void *data,
 {
 }
 
-static const struct desktop_shell_listener listener = {
+static const struct desktop_shell_listener shell_listener = {
   desktop_shell_configure,
   desktop_shell_prepare_lock_surface,
   desktop_shell_grab_cursor
@@ -692,7 +692,7 @@ registry_handle_global (void *data,
     {
       d->shell = wl_registry_bind (registry, name,
           &desktop_shell_interface, 3);
-      desktop_shell_add_listener (d->shell, &listener, d);
+      desktop_shell_add_listener (d->shell, &shell_listener, d);
     }
   else if (!strcmp (interface, "wl_output"))
     {

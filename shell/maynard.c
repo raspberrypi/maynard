@@ -64,6 +64,7 @@ struct desktop {
 
   struct element *background;
   struct element *panel;
+  struct element *curtain;
   struct element *launcher_grid;
   struct element *clock;
 
@@ -179,6 +180,8 @@ launcher_grid_toggle (GtkWidget *widget,
     {
       shell_helper_slide_surface_back (desktop->helper,
           desktop->launcher_grid->surface);
+
+      shell_helper_curtain (desktop->helper, desktop->curtain->surface, 0);
     }
   else
     {
@@ -190,6 +193,8 @@ launcher_grid_toggle (GtkWidget *widget,
       shell_helper_slide_surface (desktop->helper,
           desktop->launcher_grid->surface,
           width + MAYNARD_PANEL_WIDTH, 0);
+
+      shell_helper_curtain (desktop->helper, desktop->curtain->surface, 1);
     }
 
   desktop->grid_visible = !desktop->grid_visible;
@@ -556,6 +561,32 @@ background_create (struct desktop *desktop)
 }
 
 static void
+curtain_create (struct desktop *desktop)
+{
+  GdkWindow *gdk_window;
+  struct element *curtain;
+
+  curtain = malloc (sizeof *curtain);
+  memset (curtain, 0, sizeof *curtain);
+
+  curtain->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+
+  gtk_window_set_title (GTK_WINDOW (curtain->window), "maynard");
+  gtk_window_set_decorated (GTK_WINDOW (curtain->window), FALSE);
+  gtk_widget_set_size_request (curtain->window, 8192, 8192);
+  gtk_widget_realize (curtain->window);
+
+  gdk_window = gtk_widget_get_window (curtain->window);
+  gdk_wayland_window_set_use_custom_surface (gdk_window);
+
+  curtain->surface = gdk_wayland_window_get_wl_surface (gdk_window);
+
+  desktop->curtain = curtain;
+
+  gtk_widget_show_all (curtain->window);
+}
+
+static void
 css_setup (struct desktop *desktop)
 {
   GtkCssProvider *provider;
@@ -774,6 +805,7 @@ main (int argc,
 
   css_setup (desktop);
   background_create (desktop);
+  curtain_create (desktop);
 
   /* panel needs to be first so the clock and launcher grid can
    * be added to its layer */

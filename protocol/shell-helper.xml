@@ -26,5 +26,10 @@
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
+    <request name="curtain">
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="show" type="int"/>
+    </request>
+
   </interface>
 </protocol>

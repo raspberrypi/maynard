@@ -33,6 +33,11 @@ struct shell_helper {
 
 	struct weston_layer *panel_layer;
 
+	struct weston_layer curtain_layer;
+	struct weston_view *curtain_view;
+	struct weston_view_animation *curtain_animation;
+	uint32_t curtain_show;
+
 	struct wl_list slide_list;
 };
 
@@ -317,12 +322,109 @@ shell_helper_slide_surface_back(struct wl_client *client,
 		slide_back(slide);
 }
 
+/* mostly copied from weston's desktop-shell/shell.c */
+static struct weston_view *
+shell_curtain_create_view(struct shell_helper *helper,
+			  struct weston_surface *surface)
+{
+	struct weston_view *view;
+
+	if (!surface)
+		return NULL;
+
+	view = weston_view_create(surface);
+	if (!view) {
+		return NULL;
+	}
+
+	weston_view_set_position(view, 0, 0);
+	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.7);
+	wl_list_insert(&helper->curtain_layer.view_list,
+		       &view->layer_link);
+	pixman_region32_init_rect(&surface->input, 0, 0,
+	                          surface->width,
+	                          surface->height);
+
+	return view;
+}
+
+static void
+curtain_done_hide(struct weston_view_animation *animation,
+		  void *data);
+
+static void
+curtain_fade_done(struct weston_view_animation *animation,
+		  void *data)
+{
+	struct shell_helper *helper = data;
+
+	if (!helper->curtain_show)
+		wl_list_remove(&helper->curtain_layer.link);
+
+	helper->curtain_animation = NULL;
+}
+
+static void
+shell_helper_curtain(struct wl_client *client,
+		     struct wl_resource *resource,
+		     struct wl_resource *surface_resource,
+		     int32_t show)
+{
+	struct shell_helper *helper = wl_resource_get_user_data(resource);
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+
+	helper->curtain_show = show;
+
+	if (show) {
+		if (helper->curtain_animation) {
+			weston_fade_update(helper->curtain_animation, 0.7);
+			return;
+		}
+
+		if (!helper->curtain_view) {
+			weston_layer_init(&helper->curtain_layer,
+					  &helper->panel_layer->link);
+
+			helper->curtain_view = shell_curtain_create_view(helper, surface);
+
+			/* we need to assign an output to the view before we can
+			* fade it in */
+			weston_view_geometry_dirty(helper->curtain_view);
+			weston_view_update_transform(helper->curtain_view);
+		} else {
+			wl_list_insert(&helper->panel_layer->link, &helper->curtain_layer.link);
+		}
+
+		helper->curtain_animation = weston_fade_run(
+			helper->curtain_view,
+			0.0, 0.7, 400,
+			curtain_fade_done, helper);
+
+	} else {
+		if (helper->curtain_animation) {
+			weston_fade_update(helper->curtain_animation, 0.0);
+			return;
+		}
+
+		/* should never happen in theory */
+		if (!helper->curtain_view)
+			return;
+
+		helper->curtain_animation = weston_fade_run(
+			helper->curtain_view,
+			0.7, 0.0, 400,
+			curtain_fade_done, helper);
+	}
+}
+
 static const struct shell_helper_interface helper_implementation = {
 	shell_helper_move_surface,
 	shell_helper_add_surface_to_layer,
 	shell_helper_set_panel,
 	shell_helper_slide_surface,
-	shell_helper_slide_surface_back
+	shell_helper_slide_surface_back,
+	shell_helper_curtain
 };
 
 static void
@@ -358,6 +460,8 @@ module_init(struct weston_compositor *ec,
 
 	helper->compositor = ec;
 	helper->panel_layer = NULL;
+	helper->curtain_view = NULL;
+	helper->curtain_show = 0;
 
 	wl_list_init(&helper->slide_list);
 

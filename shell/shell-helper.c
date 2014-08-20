@@ -70,9 +70,9 @@ configure_surface(struct weston_surface *es, int32_t sx, int32_t sy)
 
 	new_view = container_of(es->views.next, struct weston_view, surface_link);
 
-	if (wl_list_empty(&new_view->layer_link)) {
+	if (wl_list_empty(&new_view->layer_link.link)) {
 		/* be sure to append to the list, not insert */
-		wl_list_insert(&existing_view->layer_link, &new_view->layer_link);
+		weston_layer_entry_insert(&existing_view->layer_link, &new_view->layer_link);
 		weston_compositor_schedule_repaint(es->compositor);
 	}
 }
@@ -119,8 +119,8 @@ configure_panel(struct weston_surface *es, int32_t sx, int32_t sy)
 
 	view = container_of(es->views.next, struct weston_view, surface_link);
 
-	if (wl_list_empty(&view->layer_link)) {
-		wl_list_insert(&helper->panel_layer->view_list, &view->layer_link);
+	if (wl_list_empty(&view->layer_link.link)) {
+		weston_layer_entry_insert(&helper->panel_layer->view_list, &view->layer_link);
 		weston_compositor_schedule_repaint(es->compositor);
 	}
 }
@@ -143,9 +143,9 @@ shell_helper_set_panel(struct wl_client *client,
 	 * access to the layer. */
 	surface->configure(surface, 0, 0);
 
-	helper->panel_layer = container_of(view->layer_link.next,
+	helper->panel_layer = container_of(view->layer_link.link.next,
 					   struct weston_layer,
-					   view_list);
+					   view_list.link);
 
 	/* set new configure functions that only ensure the surface is in the
 	 * correct layer. */
@@ -339,8 +339,8 @@ shell_curtain_create_view(struct shell_helper *helper,
 
 	weston_view_set_position(view, 0, 0);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.7);
-	wl_list_insert(&helper->curtain_layer.view_list,
-		       &view->layer_link);
+	weston_layer_entry_insert(&helper->curtain_layer.view_list,
+				  &view->layer_link);
 	pixman_region32_init_rect(&surface->input, 0, 0,
 	                          surface->width,
 	                          surface->height);

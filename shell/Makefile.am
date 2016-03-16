@@ -21,6 +21,8 @@ maynard_SOURCES =				\
 	launcher.h				\
 	maynard-resources.c			\
 	maynard-resources.h			\
+	weston-desktop-shell-client-protocol.h	\
+	weston-desktop-shell-protocol.c		\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	shell-helper-client-protocol.h		\
@@ -28,6 +30,8 @@ maynard_SOURCES =				\
 maynard_LDADD = $(GTK_LIBS) -lm
 
 BUILT_SOURCES =					\
+	weston-desktop-shell-client-protocol.h	\
+	weston-desktop-shell-protocol.c		\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	shell-helper-client-protocol.h		\

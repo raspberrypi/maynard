@@ -1,1 +1,1 @@
-EXTRA_DIST = desktop-shell.xml shell-helper.xml
+EXTRA_DIST = weston-desktop-shell.xml desktop-shell.xml shell-helper.xml

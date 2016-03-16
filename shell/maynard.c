@@ -326,13 +326,13 @@ panel_window_enter_cb (GtkWidget *widget,
     {
       g_source_remove (desktop->hide_panel_idle_id);
       desktop->hide_panel_idle_id = 0;
-      return;
+      return FALSE;
     }
 
   if (desktop->pointer_out_of_panel)
     {
       desktop->pointer_out_of_panel = FALSE;
-      return;
+      return FALSE;
     }
 
   shell_helper_slide_surface_back (desktop->helper,
@@ -388,12 +388,12 @@ panel_window_leave_cb (GtkWidget *widget,
     }
 
   if (desktop->hide_panel_idle_id > 0)
-    return;
+    return FALSE;
 
   if (desktop->grid_visible)
     {
       desktop->pointer_out_of_panel = TRUE;
-      return;
+      return FALSE;
     }
 
   desktop->hide_panel_idle_id = g_idle_add (leave_panel_idle_cb, desktop);

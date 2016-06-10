@@ -573,8 +573,8 @@ background_create (struct desktop *desktop)
   background = malloc (sizeof *background);
   memset (background, 0, sizeof *background);
 
-  filename = g_getenv ("BACKGROUND");
-  if (filename)
+  filename = g_getenv ("MAYNARD_BACKGROUND");
+  if (filename && *filename)
     unscaled_background = gdk_pixbuf_new_from_file (filename, NULL);
   else
     unscaled_background = gdk_pixbuf_new_from_xpm_data

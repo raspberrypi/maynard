@@ -43,8 +43,6 @@
 
 extern char **environ; /* defined by libc */
 
-#define DEFAULT_BACKGROUND "/usr/share/wallpapers/Hanami/contents/images/3872x2592.jpg"
-
 struct element {
   GtkWidget *window;
   GdkPixbuf *pixbuf;
@@ -575,14 +573,16 @@ background_create (struct desktop *desktop)
   background = malloc (sizeof *background);
   memset (background, 0, sizeof *background);
 
-  filename = g_getenv ("BACKGROUND");
-  if (filename == NULL)
-    filename = DEFAULT_BACKGROUND;
-  unscaled_background = gdk_pixbuf_new_from_file (filename, NULL);
+  filename = g_getenv ("MAYNARD_BACKGROUND");
+  if (filename && *filename)
+    unscaled_background = gdk_pixbuf_new_from_file (filename, NULL);
+  else
+    unscaled_background = gdk_pixbuf_new_from_xpm_data
+        ((const char*[]){"1 1 1 1", "_ c SteelBlue", "_"});
   if (!unscaled_background)
     {
-      g_message ("Could not load background. "
-          "Do you have kdewallpapers installed?");
+      g_message ("Could not load background (%s).",
+          filename ? filename : "built-in");
       exit (EXIT_FAILURE);
     }
 

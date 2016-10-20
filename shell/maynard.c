@@ -828,6 +828,37 @@ static const struct wl_registry_listener registry_listener = {
   registry_handle_global_remove
 };
 
+static void grab_surface_create(struct desktop *desktop)
+{
+
+  struct wl_surface *s;
+
+  GdkWindow *gdk_window;
+  struct element *curtain;
+
+  curtain = malloc (sizeof *curtain);
+  memset (curtain, 0, sizeof *curtain);
+
+  curtain->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+
+  gtk_window_set_title (GTK_WINDOW (curtain->window), "maynard2");
+  gtk_window_set_decorated (GTK_WINDOW (curtain->window), FALSE);
+  gtk_widget_set_size_request (curtain->window, 8192, 8192);
+  gtk_widget_realize (curtain->window);
+
+  gdk_window = gtk_widget_get_window (curtain->window);
+  gdk_wayland_window_set_use_custom_surface (gdk_window);
+
+  curtain->surface = gdk_wayland_window_get_wl_surface (gdk_window);
+
+  desktop->curtain = curtain;
+
+  gtk_widget_show_all (curtain->window);
+  weston_desktop_shell_set_grab_surface(desktop->wshell, curtain->surface);
+
+
+}
+
 int
 main (int argc,
     char *argv[])
@@ -886,6 +917,7 @@ main (int argc,
   panel_create (desktop);
   clock_create (desktop);
   launcher_grid_create (desktop);
+  grab_surface_create (desktop);
 
   gtk_main ();
 

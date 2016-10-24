@@ -34,6 +34,16 @@ PKG_CHECK_MODULES([GTK], [
 	alsa
 ])
 
+PKG_CHECK_MODULES([NEW_WESTON], [
+	weston >= 1.12
+	libweston-1
+	],
+	[AC_DEFINE([HAVE_NEW_WESTON],
+	[1],
+	[Using weston 1.12 or newer])],
+	[AC_MSG_WARN([Not using weston 1.12 or newer])]
+)
+
 GLIB_GSETTINGS
 
 WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])

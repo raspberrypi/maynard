@@ -22,7 +22,12 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "config.h"
+#ifdef HAVE_NEW_WESTON=1
 #include <libweston-1/compositor.h>
+#else
+#include <weston/compositor.h>
+#endif
 
 #include "shell-helper-server-protocol.h"
 
@@ -71,7 +76,11 @@ shell_helper_move_surface(struct wl_client *client,
 static void
 configure_surface(struct weston_surface *es, int32_t sx, int32_t sy)
 {
+	#ifdef HAVE_NEW_WESTON
 	struct weston_view *existing_view = es->committed_private;
+	#else
+	struct weston_view *existing_view = es->configure_private;
+	#endif
 	struct weston_view *new_view;
 
 	new_view = container_of(es->views.next, struct weston_view, surface_link);
@@ -97,12 +106,21 @@ shell_helper_add_surface_to_layer(struct wl_client *client,
 	struct weston_view *new_view, *existing_view, *next;
 	struct wl_layer *layer;
 
+	#ifdef HAVE_NEW_WESTON
 	if (new_surface->committed) {
 		wl_resource_post_error(new_surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "surface role already assigned");
 		return;
 	}
+	#else
+	if (new_surface->configure) {
+		wl_resource_post_error(new_surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface role already assigned");
+		return;
+	}
+	#endif
 
 	existing_view = container_of(existing_surface->views.next,
 				     struct weston_view,
@@ -112,15 +130,24 @@ shell_helper_add_surface_to_layer(struct wl_client *client,
 		weston_view_destroy(new_view);
 	new_view = weston_view_create(new_surface);
 
+	#ifdef HAVE_NEW_WESTON
 	new_surface->committed = configure_surface;
 	new_surface->committed_private = existing_view;
+	#else
+	new_surface->configure = configure_surface;
+	new_surface->configure_private = existing_view;
+	#endif
 	new_surface->output = existing_view->output;
 }
 
 static void
 configure_panel(struct weston_surface *es, int32_t sx, int32_t sy)
 {
+	#ifdef HAVE_NEW_WESTON
 	struct shell_helper *helper = es->committed_private;
+	#else
+	struct shell_helper *helper = es->configure_private;
+	#endif
 	struct weston_view *view;
 
 	view = container_of(es->views.next, struct weston_view, surface_link);
@@ -147,7 +174,11 @@ shell_helper_set_panel(struct wl_client *client,
 	 * it hasn't yet been defined because the original surface configure
 	 * function hasn't yet been called. if we call it here we will have
 	 * access to the layer. */
+	#ifdef HAVE_NEW_WESTON
 	surface->committed(surface, 0, 0);
+	#else
+	surface->configure(surface, 0, 0);
+	#endif
 
 	helper->panel_layer = container_of(view->layer_link.link.next,
 					   struct weston_layer,
@@ -155,8 +186,13 @@ shell_helper_set_panel(struct wl_client *client,
 
 	/* set new configure functions that only ensure the surface is in the
 	 * correct layer. */
+	#ifdef HAVE_NEW_WESTON
 	surface->committed = configure_panel;
 	surface->committed_private = helper;
+	#else
+	surface->configure = configure_panel;
+	surface->configure_private = helper;
+	#endif
 }
 
 enum SlideState {

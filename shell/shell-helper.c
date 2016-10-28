@@ -23,7 +23,7 @@
 #include <assert.h>
 
 #include "config.h"
-#ifdef HAVE_NEW_WESTON=1
+#ifdef HAVE_NEW_WESTON
 #include <libweston-1/compositor.h>
 #else
 #include <weston/compositor.h>

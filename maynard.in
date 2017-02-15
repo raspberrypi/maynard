@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 PREFIX=@prefix@
 LIBEXECDIR=$PREFIX/libexec
@@ -20,6 +20,30 @@ check_install() {
     fi
 }
 
+check_group_membership() {
+        group_membership=$(groups $USER);
+        if [[ $group_membership != *weston-launch* ]]; then
+            echo "Missing weston-launch group membership for $USER. Try"
+            echo ""
+        echo "    sudo adduser $USER weston-launch"
+            echo ""
+            exit 1
+        fi
+        if [[ $group_membership != *video* ]]; then
+            echo "Missing video group membership for $USER. Try"
+            echo ""
+            echo "    sudo adduser $USER video"
+            echo ""
+            exit 1 
+        fi
+        if [[ $group_membership != *audio* ]]; then
+            echo "Missing audio group membership for $USER. Try"
+            echo ""
+            echo "    sudo adduser $USER audio"
+            exit 1 
+        fi
+    }   
+
 mkdir ~/.config > /dev/null 2>&1
 
 if [ -z "${MAYNARD_BACKGROUND+_}" -a \
@@ -40,5 +64,6 @@ if [ "$?" = "0" ]; then
         exit 1
     fi
 else
+    check_group_membership
     weston-launch
 fi
